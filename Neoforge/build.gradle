@@ -138,11 +138,14 @@ sourceSets {
     main.resources.srcDirs += ['src/generated/resources', '../Common/src/generated/resources']
     main.kotlin.srcDirs += 'src/main/java'
     test.kotlin.srcDirs += 'src/main/java'
-    // Datagen, JEI (being dropped for EMI), and Curios interop (superseded by
-    // Accessories) are parked until the core Neoforge plumbing is ported.
+    // Datagen, JEI (being dropped for EMI), Curios interop (superseded by
+    // Accessories), and the old Capability system (replaced by BlockCapability /
+    // ItemCapability / EntityCapability in 1.20.5+) are parked until the core
+    // Neoforge plumbing is ported.
     main.java.exclude 'at/petrak/hexcasting/forge/datagen/**'
     main.java.exclude 'at/petrak/hexcasting/forge/interop/jei/**'
     main.java.exclude 'at/petrak/hexcasting/forge/interop/curios/**'
+    main.java.exclude 'at/petrak/hexcasting/forge/cap/**'
 }
 
 processResources {
