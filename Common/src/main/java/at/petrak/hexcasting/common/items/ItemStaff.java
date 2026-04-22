@@ -26,7 +26,7 @@ public class ItemStaff extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
-        if (player.getAttributeValue(HexAttributes.FEEBLE_MIND) > 0){
+        if (player.getAttributeValue(HexAttributes.holder(HexAttributes.FEEBLE_MIND)) > 0){
             return InteractionResultHolder.fail(player.getItemInHand(hand));
         }
         if (player.isShiftKeyDown()) {

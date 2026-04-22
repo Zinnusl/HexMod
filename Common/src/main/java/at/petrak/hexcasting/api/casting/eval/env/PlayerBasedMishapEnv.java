@@ -35,7 +35,7 @@ public class PlayerBasedMishapEnv extends MishapEnvironment {
 
     @Override
     public void damage(float healthProportion) {
-        Mishap.trulyHurt(this.caster, this.caster.damageSources().source(HexDamageTypes.OVERCAST), this.caster.getHealth() * healthProportion);
+        Mishap.trulyHurt(this.caster, ((at.petrak.hexcasting.mixin.accessor.AccessorDamageSource)(Object)this.caster.damageSources()).hex$source(HexDamageTypes.OVERCAST, null), this.caster.getHealth() * healthProportion);
     }
 
     @Override

@@ -1,8 +1,7 @@
 package at.petrak.hexcasting.interop.patchouli;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Container;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -19,33 +18,32 @@ import java.util.stream.Collectors;
  * > we should put this in patchy but lol
  * > lazy
  * -- Hubry Vazcord
+ * <p>
+ * 1.21: Recipe<C extends Container> became Recipe<T extends RecipeInput>; the recipe
+ * manager returns RecipeHolder<T> values, so byKey produces a RecipeHolder lookup.
  */
 public class PatchouliUtils {
     @SuppressWarnings("unchecked")
-    public static <T extends Recipe<C>, C extends Container> T getRecipe(RecipeType<T> type, ResourceLocation id) {
-        // PageDoubleRecipeRegistry
+    public static <T extends Recipe<?>> T getRecipe(RecipeType<T> type, ResourceKey<Recipe<?>> key) {
         if (Minecraft.getInstance().level == null) {
             return null;
-        } else {
-            var manager = Minecraft.getInstance().level.getRecipeManager();
-            return (T) manager.byKey(id)
-                .filter((recipe) -> recipe.getType() == type).orElse(null);
         }
+        var manager = Minecraft.getInstance().level.getRecipeManager();
+        return (T) manager.byKey(key)
+            .map(net.minecraft.world.item.crafting.RecipeHolder::value)
+            .filter(recipe -> recipe.getType() == type)
+            .orElse(null);
     }
 
     /**
      * Combines the ingredients, returning the first matching stack of each, then the second stack of each, etc.
      * looping back ingredients that run out of matched stacks, until the ingredients reach the length
      * of the longest ingredient in the recipe set.
-     *
-     * @param ingredients           List of ingredients in the specific slot
-     * @param longestIngredientSize Longest ingredient in the entire recipe
-     * @return Serialized Patchouli ingredient string
      */
     public static IVariable interweaveIngredients(List<Ingredient> ingredients, int longestIngredientSize) {
         if (ingredients.size() == 1) {
-            return IVariable.wrapList(Arrays.stream(ingredients.get(0).getItems()).map(IVariable::from).collect(
-                Collectors.toList()));
+            return IVariable.wrapList(Arrays.stream(ingredients.get(0).getItems())
+                .map(IVariable::from).collect(Collectors.toList()));
         }
 
         ItemStack[] empty = {ItemStack.EMPTY};
@@ -66,9 +64,6 @@ public class PatchouliUtils {
         return IVariable.wrapList(list);
     }
 
-    /**
-     * Overload of the method above that uses the provided list's longest ingredient size.
-     */
     public static IVariable interweaveIngredients(List<Ingredient> ingredients) {
         return interweaveIngredients(ingredients,
             ingredients.stream().mapToInt(ingr -> ingr.getItems().length).max().orElse(1));

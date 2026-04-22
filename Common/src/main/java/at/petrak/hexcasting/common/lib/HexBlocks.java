@@ -66,7 +66,7 @@ public class HexBlocks {
 
     private static BlockBehaviour.Properties slateish() {
         return BlockBehaviour.Properties
-            .copy(Blocks.DEEPSLATE_TILES)
+            .ofFullCopy(Blocks.DEEPSLATE_TILES)
             .strength(4f, 4f);
     }
 
@@ -86,7 +86,7 @@ public class HexBlocks {
 
     private static BlockBehaviour.Properties woodyHard(MapColor color) {
         return BlockBehaviour.Properties
-            .copy(Blocks.OAK_LOG)
+            .ofFullCopy(Blocks.OAK_LOG)
             .mapColor(color)
             .sound(SoundType.WOOD)
             .strength(3f, 4f);
@@ -98,7 +98,7 @@ public class HexBlocks {
 
     private static BlockBehaviour.Properties woody(MapColor color) {
         return BlockBehaviour.Properties
-            .copy(Blocks.OAK_LOG)
+            .ofFullCopy(Blocks.OAK_LOG)
             .mapColor(color)
             .sound(SoundType.WOOD)
             .strength(2f);
@@ -106,7 +106,7 @@ public class HexBlocks {
 
     private static BlockBehaviour.Properties leaves(MapColor color) {
         return BlockBehaviour.Properties
-            .copy(Blocks.OAK_LEAVES)
+            .ofFullCopy(Blocks.OAK_LEAVES)
             .strength(0.2F)
             .randomTicks()
             .sound(SoundType.GRASS)
@@ -119,7 +119,7 @@ public class HexBlocks {
     // we have to make it emit light because otherwise it occludes itself and is always dark
     private static BlockBehaviour.Properties quenched() {
         return BlockBehaviour.Properties
-            .copy(Blocks.AMETHYST_BLOCK)
+            .ofFullCopy(Blocks.AMETHYST_BLOCK)
             .lightLevel($ -> 4)
             .noOcclusion();
     }
@@ -287,8 +287,7 @@ public class HexBlocks {
     public static final ButtonBlock EDIFIED_BUTTON = blockItem("edified_button",
         new BlockHexWoodButton(edifiedWoody().noOcclusion().noCollission()));
     public static final PressurePlateBlock EDIFIED_PRESSURE_PLATE = blockItem("edified_pressure_plate",
-        new BlockHexPressurePlate(PressurePlateBlock.Sensitivity.EVERYTHING,
-            edifiedWoody().noOcclusion().noCollission()));
+        new BlockHexPressurePlate(edifiedWoody().noOcclusion().noCollission()));
     public static final BlockAkashicLeaves AMETHYST_EDIFIED_LEAVES = blockItem("amethyst_edified_leaves",
         new BlockAkashicLeaves(leaves(MapColor.COLOR_PURPLE)));
     public static final BlockAkashicLeaves AVENTURINE_EDIFIED_LEAVES = blockItem("aventurine_edified_leaves",

@@ -5,15 +5,23 @@ import at.petrak.hexcasting.api.utils.NBTHelper;
 import at.petrak.hexcasting.common.items.storage.ItemSpellbook;
 import at.petrak.hexcasting.common.lib.HexItems;
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * 1.21: ShapelessRecipe no longer takes a ResourceLocation id in its constructor
+ * (RecipeHolder holds the id separately) and assemble takes a CraftingInput +
+ * HolderLookup.Provider.
+ */
 public class SealSpellbookRecipe extends ShapelessRecipe {
     public static final SimpleCraftingRecipeSerializer<SealSpellbookRecipe> SERIALIZER =
         new SimpleCraftingRecipeSerializer<>(SealSpellbookRecipe::new);
@@ -32,15 +40,15 @@ public class SealSpellbookRecipe extends ShapelessRecipe {
         return ingredients;
     }
 
-    public SealSpellbookRecipe(ResourceLocation id, CraftingBookCategory category) {
-        super(id, "", category, getSealedStack(), createIngredients());
+    public SealSpellbookRecipe(CraftingBookCategory category) {
+        super("", category, getSealedStack(), createIngredients());
     }
 
     @Override
-    public @NotNull ItemStack assemble(CraftingContainer inv, RegistryAccess access) {
+    public @NotNull ItemStack assemble(CraftingInput inv, HolderLookup.Provider provider) {
         ItemStack out = ItemStack.EMPTY;
 
-        for (int i = 0; i < inv.getContainerSize(); i++) {
+        for (int i = 0; i < inv.size(); i++) {
             var stack = inv.getItem(i);
             if (stack.is(HexItems.SPELLBOOK)) {
                 out = stack.copy();
@@ -61,4 +69,3 @@ public class SealSpellbookRecipe extends ShapelessRecipe {
         return SERIALIZER;
     }
 }
-

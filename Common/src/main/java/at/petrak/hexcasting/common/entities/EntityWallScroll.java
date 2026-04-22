@@ -111,8 +111,8 @@ public class EntityWallScroll extends HangingEntity {
     }
 
     @Override
-    public void dropItem(ServerLevel level, @Nullable Entity pBrokenEntity) {
-        if (level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+    public void dropItem(@Nullable Entity pBrokenEntity) {
+        if (this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
             this.playSound(SoundEvents.PAINTING_BREAK, 1.0F, 1.0F);
             if (pBrokenEntity instanceof Player player) {
                 if (player.getAbilities().instabuild) {
@@ -120,7 +120,7 @@ public class EntityWallScroll extends HangingEntity {
                 }
             }
 
-            this.spawnAtLocation(level, this.scroll);
+            this.spawnAtLocation(this.scroll);
         }
     }
 
@@ -201,18 +201,8 @@ public class EntityWallScroll extends HangingEntity {
         super.readAdditionalSaveData(tag);
     }
 
-    // 1.21: moveTo → snapTo for server-authoritative placement.
-    @Override
-    public void snapTo(double pX, double pY, double pZ, float pYaw, float pPitch) {
-        this.setPos(pX, pY, pZ);
-    }
-
-    // 1.21: lerpTo signature has been simplified — no more increment count / teleport flag.
-    @Override
-    public void lerpTo(double pX, double pY, double pZ, float pYaw, float pPitch, int pPosRotationIncrements) {
-        BlockPos blockpos = this.pos.offset((int) (pX - this.getX()), (int) (pY - this.getY()), (int) (pZ - this.getZ()));
-        this.setPos(blockpos.getX(), blockpos.getY(), blockpos.getZ());
-    }
+    // 1.21: HangingEntity's moveTo/lerpTo overrides are no longer needed — BlockAttachedEntity
+    // pins position itself. Default superclass behaviour is correct for wall scrolls.
 
     @Override
     public ItemStack getPickResult() {

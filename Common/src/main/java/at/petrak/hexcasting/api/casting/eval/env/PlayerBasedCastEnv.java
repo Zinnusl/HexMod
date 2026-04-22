@@ -56,8 +56,8 @@ public abstract class PlayerBasedCastEnv extends CastingEnvironment {
         super(caster.serverLevel());
         this.caster = caster;
         this.castingHand = castingHand;
-        this.ambitRadius = caster.getAttributeValue(HexAttributes.AMBIT_RADIUS);
-        this.sentinelRadius = caster.getAttributeValue(HexAttributes.SENTINEL_RADIUS);
+        this.ambitRadius = caster.getAttributeValue(HexAttributes.holder(HexAttributes.AMBIT_RADIUS));
+        this.sentinelRadius = caster.getAttributeValue(HexAttributes.holder(HexAttributes.SENTINEL_RADIUS));
     }
 
     @Override
@@ -76,7 +76,7 @@ public abstract class PlayerBasedCastEnv extends CastingEnvironment {
         if (isOfTag(IXplatAbstractions.INSTANCE.getActionRegistry(), loc, HexTags.Actions.CANNOT_MODIFY_COST)) {
             return 1.0;
         } else {
-            return this.caster.getAttributeValue(HexAttributes.MEDIA_CONSUMPTION_MODIFIER);
+            return this.caster.getAttributeValue(HexAttributes.holder(HexAttributes.MEDIA_CONSUMPTION_MODIFIER));
         }
     }
 
@@ -90,11 +90,11 @@ public abstract class PlayerBasedCastEnv extends CastingEnvironment {
             }
         }
         if (this.caster != null){
-            double ambitAttribute = this.caster.getAttributeValue(HexAttributes.AMBIT_RADIUS);
+            double ambitAttribute = this.caster.getAttributeValue(HexAttributes.holder(HexAttributes.AMBIT_RADIUS));
             if (this.ambitRadius != ambitAttribute){
                 this.ambitRadius = ambitAttribute;
             }
-            double sentinelAttribute = this.caster.getAttributeValue(HexAttributes.SENTINEL_RADIUS);
+            double sentinelAttribute = this.caster.getAttributeValue(HexAttributes.holder(HexAttributes.SENTINEL_RADIUS));
             if (this.sentinelRadius != sentinelAttribute){
                 this.sentinelRadius = sentinelAttribute;
             }
@@ -165,14 +165,14 @@ public abstract class PlayerBasedCastEnv extends CastingEnvironment {
             double healthToRemove = Math.max(costLeft / mediaToHealth, 0.5);
             if (simulate) {
                 long simulatedRemovedMedia = Mth.ceil(Math.min(this.caster.getHealth(), healthToRemove) * mediaToHealth);
-                if (this.caster.isInvulnerableTo(this.caster.damageSources().source(HexDamageTypes.OVERCAST))) {
+                if (((at.petrak.hexcasting.mixin.accessor.AccessorDamageSource)(Object)this.caster.isInvulnerableTo(this.caster.damageSources()).hex$source(HexDamageTypes.OVERCAST, null))) {
                     simulatedRemovedMedia = 0;
                 }
                 costLeft -= simulatedRemovedMedia;
             } else {
                 var mediaAbleToCastFromHP = this.caster.getHealth() * mediaToHealth;
 
-                Mishap.trulyHurt(this.caster, this.caster.damageSources().source(HexDamageTypes.OVERCAST), (float) healthToRemove);
+                Mishap.trulyHurt(this.caster, ((at.petrak.hexcasting.mixin.accessor.AccessorDamageSource)(Object)this.caster.damageSources()).hex$source(HexDamageTypes.OVERCAST, null), (float) healthToRemove);
 
                 var actuallyTaken = Mth.ceil(mediaAbleToCastFromHP - (this.caster.getHealth() * mediaToHealth));
 

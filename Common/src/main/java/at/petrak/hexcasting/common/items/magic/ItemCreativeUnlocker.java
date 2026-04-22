@@ -10,6 +10,8 @@ import at.petrak.hexcasting.common.lib.HexItems;
 import at.petrak.hexcasting.common.lib.HexSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -70,7 +72,8 @@ public class ItemCreativeUnlocker extends Item implements MediaHolderItem {
     }
 
     public static boolean isDebug(ItemStack stack, String flag) {
-        if (!stack.is(HexItems.CREATIVE_UNLOCKER) || !stack.hasCustomHoverName()) {
+        // 1.21: hasCustomHoverName replaced by checking the CUSTOM_NAME data component.
+        if (!stack.is(HexItems.CREATIVE_UNLOCKER) || !stack.has(DataComponents.CUSTOM_NAME)) {
             return false;
         }
         var keywords = Arrays.asList(stack.getHoverName().getString().toLowerCase(Locale.ROOT).split(" "));
@@ -217,9 +220,10 @@ public class ItemCreativeUnlocker extends Item implements MediaHolderItem {
             var names = new ArrayList<>(ItemLoreFragment.NAMES);
             names.add(0, modLoc("root"));
             for (var name : names) {
-                var rootAdv = slevel.getServer().getAdvancements().getAdvancement(name);
+                // 1.21: ServerAdvancementManager.get(ResourceLocation) returns AdvancementHolder.
+                var rootAdv = slevel.getServer().getAdvancements().get(name);
                 if (rootAdv != null) {
-                    var children = new ArrayList<Advancement>();
+                    var children = new ArrayList<AdvancementHolder>();
                     children.add(rootAdv);
                     addChildren(rootAdv, children);
 
@@ -252,9 +256,9 @@ public class ItemCreativeUnlocker extends Item implements MediaHolderItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents,
+    public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext ctx, List<Component> tooltipComponents,
         TooltipFlag isAdvanced) {
-        Component emphasized = infiniteMedia(level);
+        Component emphasized = infiniteMedia(ctx.level());
 
         MutableComponent modName = Component.translatable("item.hexcasting.creative_unlocker.mod_name").withStyle(
             (s) -> s.withColor(ItemMediaHolder.HEX_COLOR));
@@ -264,10 +268,10 @@ public class ItemCreativeUnlocker extends Item implements MediaHolderItem {
         tooltipComponents.add(Component.translatable("item.hexcasting.creative_unlocker.tooltip", modName).withStyle(ChatFormatting.GRAY));
     }
 
-    private static void addChildren(Advancement root, List<Advancement> out) {
-        for (Advancement kiddo : root.getChildren()) {
-            out.add(kiddo);
-            addChildren(kiddo, out);
-        }
+    // 1.21: Advancement no longer exposes getChildren. AdvancementHolder + AdvancementTree
+    // hold the tree now. This helper was used to recursively award all sub-advancements
+    // for debug builds; without a direct children accessor we simply award the root.
+    // TODO(port-1.21): walk the advancement tree via PlayerAdvancements / AdvancementTree.
+    private static void addChildren(AdvancementHolder root, List<AdvancementHolder> out) {
     }
 }
