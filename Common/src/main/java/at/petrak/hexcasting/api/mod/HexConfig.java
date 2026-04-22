@@ -109,7 +109,7 @@ public class HexConfig {
     // Simple extensions for resource location configs
     public static boolean anyMatch(List<? extends String> keys, ResourceLocation key) {
         for (String s : keys) {
-            if (ResourceLocation.isValidResourceLocation(s)) {
+            if (null != ResourceLocation.tryParse(s)) {
                 var rl = ResourceLocation.parse(s);
                 if (rl.equals(key)) {
                     return true;

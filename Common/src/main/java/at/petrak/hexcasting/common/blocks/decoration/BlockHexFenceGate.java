@@ -11,8 +11,9 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 
 public class BlockHexFenceGate extends FenceGateBlock {
 
-    public BlockHexFenceGate(Properties $$0) {
-        super($$0, WoodType.DARK_OAK);
+    public BlockHexFenceGate(Properties properties) {
+        // 1.21: FenceGateBlock(WoodType, Properties).
+        super(WoodType.DARK_OAK, properties);
     }
 
     @SoftImplement("forge")

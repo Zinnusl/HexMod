@@ -35,8 +35,10 @@ public class BlockEntityLookingImpetus extends BlockEntityAbstractImpetus {
 
         int prevLookAmt = self.lookAmount;
         int range = 20;
+        // 1.21: AABB(BlockPos, BlockPos) was removed; use explicit coordinates.
         var players = level.getEntitiesOfClass(ServerPlayer.class,
-            new AABB(pos.offset(-range, -range, -range), pos.offset(range, range, range)));
+            new AABB(pos.getX() - range, pos.getY() - range, pos.getZ() - range,
+                     pos.getX() + range + 1, pos.getY() + range + 1, pos.getZ() + range + 1));
 
         ServerPlayer looker = null;
         for (var player : players) {

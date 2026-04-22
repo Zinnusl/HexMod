@@ -50,7 +50,7 @@ public class ItemThoughtKnot extends Item implements IotaHolderItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel,
+    public void appendHoverText(ItemStack pStack, net.minecraft.world.item.Item.TooltipContext ctx,
         List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
         IotaHolderItem.appendHoverText(this, pStack, pTooltipComponents, pIsAdvanced);
     }

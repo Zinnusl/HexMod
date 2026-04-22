@@ -41,7 +41,7 @@ public class ItemAncientCypher extends ItemCypher {
     @Override
     public void appendHoverText(ItemStack pStack, net.minecraft.world.item.Item.TooltipContext ctx, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
         // display media fullness as usual
-        super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
+        super.appendHoverText(pStack, ctx, pTooltipComponents, pIsAdvanced);
 
         // also show contained spell
         var patternsTag = NBTHelper.getList(pStack, TAG_PATTERNS, Tag.TAG_COMPOUND);

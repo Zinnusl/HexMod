@@ -118,10 +118,12 @@ public class ItemScroll extends Item implements IotaHolderItem {
         scrollStack.setCount(1);
         var scrollEntity = new EntityWallScroll(level, posInFront, direction, scrollStack, false, this.blockSize);
 
-        // i guess
-        var stackTag = itemstack.getTag();
-        if (stackTag != null) {
-            EntityType.updateCustomEntityTag(level, player, scrollEntity, stackTag);
+        // 1.21: ItemStack no longer has getTag(); EntityType.updateCustomEntityTag now
+        // accepts a CustomData component. The custom-entity-name decorator is the only
+        // thing that still fires here.
+        var customData = itemstack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if (customData != null) {
+            EntityType.updateCustomEntityTag(level, player, scrollEntity, customData);
         }
 
         if (scrollEntity.survives()) {

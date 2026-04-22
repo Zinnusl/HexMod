@@ -42,7 +42,9 @@ public class BlockEntityQuenchedAllayRenderer implements BlockEntityRenderer<Blo
         // Forge fixes BEs rendering offscreen; Fabric doesn't!
         // So we do a special check on Fabric only
         var pos = blockEntity.getBlockPos();
-        var aabb = new AABB(pos.offset(-1, 0, -1), pos.offset(1, 1, 1));
+        // 1.21: AABB(BlockPos, BlockPos) was removed; use explicit coordinates.
+        var aabb = new AABB(pos.getX() - 1, pos.getY(), pos.getZ() - 1,
+                            pos.getX() + 2, pos.getY() + 2, pos.getZ() + 2);
         if (IClientXplatAbstractions.INSTANCE.fabricAdditionalQuenchFrustumCheck(aabb)) {
             doRender((BlockQuenchedAllay) blockEntity.getBlockState().getBlock(), this.ctx.getBlockRenderDispatcher(), poseStack, bufferSource, packedLight, packedOverlay);
         }

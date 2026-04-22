@@ -54,7 +54,7 @@ public class AddHexToAncientCypherFunc extends LootItemConditionalFunction {
         var tag = new CompoundTag();
         tag.putString(ItemAncientCypher.TAG_HEX_NAME, hex.getFirst());
         tag.put(ItemAncientCypher.TAG_PATTERNS, patsTag);
-        tag.put(ItemPackagedHex.TAG_PIGMENT, FrozenPigment.ANCIENT.get().serializeToNBT());
+        tag.put(ItemPackagedHex.TAG_PIGMENT, FrozenPigment.ANCIENT.get().serializeToNBT(net.minecraft.core.RegistryAccess.EMPTY));
         tag.putLong(ItemAncientCypher.TAG_MEDIA, 32 * MediaConstants.SHARD_UNIT);
         tag.putLong(ItemAncientCypher.TAG_MAX_MEDIA, 32 * MediaConstants.SHARD_UNIT);
         tag.putInt(VariantItem.TAG_VARIANT, rand.nextInt(8));

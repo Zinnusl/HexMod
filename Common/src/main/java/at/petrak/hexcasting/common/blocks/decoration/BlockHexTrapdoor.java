@@ -9,8 +9,9 @@ import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BlockHexTrapdoor extends TrapDoorBlock {
-    public BlockHexTrapdoor(Properties $$0) {
-        super($$0, HexBlockSetTypes.EDIFIED_WOOD);
+    public BlockHexTrapdoor(Properties properties) {
+        // 1.21: TrapDoorBlock(BlockSetType, Properties).
+        super(HexBlockSetTypes.EDIFIED_WOOD, properties);
     }
 
     @SoftImplement("forge")

@@ -258,7 +258,9 @@ public class ItemCreativeUnlocker extends Item implements MediaHolderItem {
     @Override
     public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext ctx, List<Component> tooltipComponents,
         TooltipFlag isAdvanced) {
-        Component emphasized = infiniteMedia(ctx.level());
+        // 1.21: TooltipContext has no level accessor; tooltip text that depended on
+        // world-tick-driven animation loses its wiggle.
+        Component emphasized = infiniteMedia(null);
 
         MutableComponent modName = Component.translatable("item.hexcasting.creative_unlocker.mod_name").withStyle(
             (s) -> s.withColor(ItemMediaHolder.HEX_COLOR));

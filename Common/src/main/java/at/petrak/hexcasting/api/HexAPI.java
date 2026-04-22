@@ -169,11 +169,11 @@ public interface HexAPI {
     // empty repair ingredient, leather equip sound. Hex doesn't use it — DUMMY is a
     // placeholder for the interface default.
     ArmorMaterial DUMMY_ARMOR_MATERIAL = new ArmorMaterial(
-        java.util.Map.of(),
+        java.util.Map.<net.minecraft.world.item.ArmorItem.Type, Integer>of(),
         0,
         net.minecraft.core.Holder.direct(SoundEvents.ARMOR_EQUIP_LEATHER),
         () -> Ingredient.of(),
-        java.util.List.of(),
+        java.util.List.<net.minecraft.world.item.ArmorMaterial.Layer>of(),
         0f,
         0f
     );

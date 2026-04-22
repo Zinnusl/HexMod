@@ -100,15 +100,8 @@ public class EntityWallScroll extends HangingEntity {
         );
     }
 
-    @Override
-    public int getWidth() {
-        return 16 * blockSize;
-    }
-
-    @Override
-    public int getHeight() {
-        return 16 * blockSize;
-    }
+    // 1.21: HangingEntity no longer has getWidth/getHeight; bounding box comes from
+    // calculateBoundingBox above.
 
     @Override
     public void dropItem(@Nullable Entity pBrokenEntity) {

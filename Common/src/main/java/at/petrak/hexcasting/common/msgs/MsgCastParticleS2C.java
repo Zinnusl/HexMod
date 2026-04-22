@@ -38,7 +38,7 @@ public record MsgCastParticleS2C(ParticleSpray spray, FrozenPigment colorizer) i
         var spread = buf.readDouble();
         var count = buf.readInt();
         var tag = buf.readAnySizeNbt();
-        var colorizer = FrozenPigment.fromNBT(tag);
+        var colorizer = FrozenPigment.fromNBT(tag, net.minecraft.core.RegistryAccess.EMPTY);
         return new MsgCastParticleS2C(
             new ParticleSpray(new Vec3(posX, posY, posZ), new Vec3(velX, velY, velZ), fuzziness, spread, count),
             colorizer);
@@ -55,7 +55,7 @@ public record MsgCastParticleS2C(ParticleSpray spray, FrozenPigment colorizer) i
         buf.writeDouble(this.spray.getFuzziness());
         buf.writeDouble(this.spray.getSpread());
         buf.writeInt(this.spray.getCount());
-        buf.writeNbt(this.colorizer.serializeToNBT());
+        buf.writeNbt(this.colorizer.serializeToNBT(net.minecraft.core.RegistryAccess.EMPTY));
     }
 
 

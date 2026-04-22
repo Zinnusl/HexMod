@@ -90,12 +90,12 @@ public class BlockEntityConjured extends HexBlockEntity {
 
     @Override
     protected void saveModData(CompoundTag tag) {
-        tag.put(TAG_COLORIZER, this.colorizer.serializeToNBT());
+        tag.put(TAG_COLORIZER, this.colorizer.serializeToNBT(net.minecraft.core.RegistryAccess.EMPTY));
     }
 
     @Override
     protected void loadModData(CompoundTag tag) {
-        this.colorizer = FrozenPigment.fromNBT(tag.getCompound(TAG_COLORIZER));
+        this.colorizer = FrozenPigment.fromNBT(tag.getCompound(TAG_COLORIZER), net.minecraft.core.RegistryAccess.EMPTY);
     }
 
     public FrozenPigment getColorizer() {
