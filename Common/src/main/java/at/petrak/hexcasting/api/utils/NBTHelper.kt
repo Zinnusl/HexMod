@@ -16,7 +16,7 @@ import java.util.*
 internal val ItemStack.hexCustomTag: CompoundTag?
     get() = this.get(DataComponents.CUSTOM_DATA)?.copyTag()
 
-internal inline fun ItemStack.hexUpdateCustomTag(block: (CompoundTag) -> Unit) {
+internal inline fun ItemStack.hexUpdateCustomTag(crossinline block: (CompoundTag) -> Unit) {
     CustomData.update(DataComponents.CUSTOM_DATA, this) { block(it) }
 }
 
