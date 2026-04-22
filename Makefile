@@ -15,10 +15,15 @@
 # Override paths on the command line if needed, e.g.
 #   make deploy INSTANCE=/d/otherpack
 
+# mingw-make on Windows defaults to cmd.exe-style shells, which don't understand
+# "./gradlew". Force bash (via env SHELL) for every recipe so the unix-style paths
+# resolve. Override with `make SHELL=/bin/sh` if you prefer a POSIX shell.
+SHELL := /bin/bash.exe
+
 INSTANCE ?= E:/CurseForge/Install/Instances/christianmods
 MODS_DIR ?= $(INSTANCE)/mods
 JAR_DIR  := Neoforge/build/libs
-GRADLEW  := ./gradlew
+GRADLEW  := sh ./gradlew
 
 # Artifact pattern: archivesName = hexcasting-neoforge-<mc>-<ver>.jar.
 # Excludes -dev, -sources, -shadow, -all variants produced by loom/shadow.
@@ -55,7 +60,7 @@ verify:
 deploy: build
 	@test -d "$(MODS_DIR)" || { echo "ERROR: target dir missing: $(MODS_DIR)"; exit 1; }
 	@jar=$$(ls -1 $(JAR_DIR)/$(JAR_PATTERN) 2>/dev/null \
-	        | grep -Ev -- '-(dev|sources|dev-shadow|shadow|all)\.jar$$' \
+	        | grep -Ev -- '-(dev|sources|dev-shadow|shadow|all|javadoc)\.jar$$' \
 	        | head -n1); \
 	if [ -z "$$jar" ]; then \
 	    echo "ERROR: no distributable jar in $(JAR_DIR)"; \
