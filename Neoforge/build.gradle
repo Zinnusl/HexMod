@@ -138,14 +138,26 @@ sourceSets {
     main.resources.srcDirs += ['src/generated/resources', '../Common/src/generated/resources']
     main.kotlin.srcDirs += 'src/main/java'
     test.kotlin.srcDirs += 'src/main/java'
-    // Datagen, JEI (being dropped for EMI), Curios interop (superseded by
-    // Accessories), and the old Capability system (replaced by BlockCapability /
-    // ItemCapability / EntityCapability in 1.20.5+) are parked until the core
-    // Neoforge plumbing is ported.
+    // The Neoforge platform glue hasn't been fully ported yet. Datagen, JEI (being
+    // dropped for EMI), Curios interop (superseded by Accessories), the old Capability
+    // system (replaced by BlockCapability / ItemCapability / EntityCapability in
+    // 1.20.5+), the platform-abstraction bridge (xplat) which depends on caps+curios,
+    // the legacy SimpleChannel packet handler, the Forge recipe/ingredient codecs,
+    // global loot modifiers, and the Forge-specific lib plumbing are all excluded
+    // until the core Neoforge infrastructure is rebuilt.
     main.java.exclude 'at/petrak/hexcasting/forge/datagen/**'
     main.java.exclude 'at/petrak/hexcasting/forge/interop/jei/**'
     main.java.exclude 'at/petrak/hexcasting/forge/interop/curios/**'
     main.java.exclude 'at/petrak/hexcasting/forge/cap/**'
+    main.java.exclude 'at/petrak/hexcasting/forge/xplat/**'
+    main.java.exclude 'at/petrak/hexcasting/forge/network/**'
+    main.java.exclude 'at/petrak/hexcasting/forge/recipe/**'
+    main.java.exclude 'at/petrak/hexcasting/forge/loot/**'
+    main.java.exclude 'at/petrak/hexcasting/forge/lib/**'
+    main.java.exclude 'at/petrak/hexcasting/forge/mixin/**'
+    main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexInitializer.java'
+    main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexClientInitializer.java'
+    main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexConfig.java'
 }
 
 processResources {
