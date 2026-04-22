@@ -160,7 +160,8 @@ sourceSets {
     main.java.exclude 'at/petrak/hexcasting/forge/mixin/**'
     main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexInitializer.java'
     main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexClientInitializer.java'
-    main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexConfig.java'
+    // ForgeHexConfig ported — isValidResourceLocation → tryParse.
+    // main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexConfig.java'
 }
 
 processResources {

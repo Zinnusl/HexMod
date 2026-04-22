@@ -7,6 +7,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
@@ -26,8 +27,8 @@ public record MsgSentinelStatusUpdateAck(@Nullable Sentinel update) implements I
         return ID;
     }
 
-    public static MsgSentinelStatusUpdateAck deserialize(ByteBuf buffer) {
-        var buf = new FriendlyByteBuf(buffer);
+    public static MsgSentinelStatusUpdateAck deserialize(RegistryFriendlyByteBuf buffer) {
+        var buf = buffer;
 
         var exists = buf.readBoolean();
         if (!exists) {
@@ -42,7 +43,7 @@ public record MsgSentinelStatusUpdateAck(@Nullable Sentinel update) implements I
         return new MsgSentinelStatusUpdateAck(sentinel);
     }
 
-    public void serialize(FriendlyByteBuf buf) {
+    public void serialize(RegistryFriendlyByteBuf buf) {
         if (update == null) {
             buf.writeBoolean(false);
             return;

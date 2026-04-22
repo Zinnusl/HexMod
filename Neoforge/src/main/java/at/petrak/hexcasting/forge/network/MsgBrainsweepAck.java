@@ -5,6 +5,7 @@ import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
@@ -22,15 +23,15 @@ public record MsgBrainsweepAck(int target) implements IMessage {
         return ID;
     }
 
-    public static MsgBrainsweepAck deserialize(ByteBuf buffer) {
-        var buf = new FriendlyByteBuf(buffer);
+    public static MsgBrainsweepAck deserialize(RegistryFriendlyByteBuf buffer) {
+        var buf = buffer;
 
         var target = buf.readInt();
         return new MsgBrainsweepAck(target);
     }
 
     @Override
-    public void serialize(FriendlyByteBuf buf) {
+    public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeInt(target);
     }
 

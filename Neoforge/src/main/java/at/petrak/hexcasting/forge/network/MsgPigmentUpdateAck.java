@@ -6,6 +6,7 @@ import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 import static at.petrak.hexcasting.api.HexAPI.modLoc;
@@ -21,8 +22,8 @@ public record MsgPigmentUpdateAck(FrozenPigment update) implements IMessage {
         return ID;
     }
 
-    public static MsgPigmentUpdateAck deserialize(ByteBuf buffer) {
-        var buf = new FriendlyByteBuf(buffer);
+    public static MsgPigmentUpdateAck deserialize(RegistryFriendlyByteBuf buffer) {
+        var buf = buffer;
 
         var tag = buf.readAnySizeNbt();
         var colorizer = FrozenPigment.fromNBT(tag);
@@ -30,7 +31,7 @@ public record MsgPigmentUpdateAck(FrozenPigment update) implements IMessage {
     }
 
     @Override
-    public void serialize(FriendlyByteBuf buf) {
+    public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeNbt(this.update.serializeToNBT());
     }
 

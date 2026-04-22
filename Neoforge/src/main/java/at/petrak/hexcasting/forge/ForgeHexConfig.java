@@ -251,7 +251,8 @@ public class ForgeHexConfig implements HexConfig.CommonConfigAccess {
         }
 
         private static boolean isValidReslocArg(Object o) {
-            return o instanceof String s && ResourceLocation.isValidResourceLocation(s);
+            // 1.21: isValidResourceLocation was removed; tryParse returns null on invalid.
+            return o instanceof String s && ResourceLocation.tryParse(s) != null;
         }
     }
 }
