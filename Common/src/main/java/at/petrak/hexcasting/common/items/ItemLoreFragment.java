@@ -49,7 +49,7 @@ public class ItemLoreFragment extends Item {
             return InteractionResultHolder.success(handStack);
         }
 
-        Advancement unfoundLore = null;
+        net.minecraft.advancements.AdvancementHolder unfoundLore = null;
         var shuffled = new ArrayList<>(NAMES);
         Collections.shuffle(shuffled);
         for (var advID : shuffled) {

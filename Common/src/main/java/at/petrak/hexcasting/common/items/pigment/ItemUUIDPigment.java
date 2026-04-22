@@ -3,7 +3,6 @@ package at.petrak.hexcasting.common.items.pigment;
 import at.petrak.hexcasting.api.addldata.ADPigment;
 import at.petrak.hexcasting.api.item.PigmentItem;
 import at.petrak.hexcasting.api.pigment.ColorProvider;
-import at.petrak.paucal.api.PaucalAPI;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import net.minecraft.world.item.Item;
@@ -28,27 +27,9 @@ public class ItemUUIDPigment extends Item implements PigmentItem {
         private final int[] colors;
 
         MyColorProvider(UUID owner) {
-            var contributor = PaucalAPI.instance().getContributor(owner);
-            if (contributor != null) {
-                var colorList = contributor.otherVals().getAsJsonArray("hexcasting:colorizer");
-                if (colorList != null) {
-                    var colors = new int[colorList.size()];
-                    var ok = true;
-                    for (int i = 0; i < colorList.size(); i++) {
-                        JsonElement elt = colorList.get(i);
-                        if (elt instanceof JsonPrimitive n && n.isNumber()) {
-                            colors[i] = n.getAsNumber().intValue() | 0xff_000000;
-                        } else {
-                            ok = false;
-                            break;
-                        }
-                    }
-                    if (ok) {
-                        this.colors = colors;
-                        return;
-                    }
-                }
-            }
+            // TODO(port-1.21): PaucalAPI#getContributor was removed; restore the
+            // contributor-lookup custom colour path once paucal 0.7.x exposes an
+            // equivalent. Fall through to the deterministic-scramble path below.
 
             // randomly scrungle the bits
             var rand = new Random(owner.getLeastSignificantBits() ^ owner.getMostSignificantBits());
