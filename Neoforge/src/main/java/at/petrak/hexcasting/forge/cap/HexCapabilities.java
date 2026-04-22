@@ -2,9 +2,9 @@ package at.petrak.hexcasting.forge.cap;
 
 import at.petrak.hexcasting.api.addldata.*;
 import at.petrak.hexcasting.api.client.ClientCastingStack;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.CapabilityToken;
+import net.neoforged.neoforge.common.capabilities.Capability;
+import net.neoforged.neoforge.common.capabilities.CapabilityManager;
+import net.neoforged.neoforge.common.capabilities.CapabilityToken;
 
 import java.util.function.Supplier;
 

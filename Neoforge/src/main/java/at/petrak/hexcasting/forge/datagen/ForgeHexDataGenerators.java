@@ -28,12 +28,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.ToolActions;
-import net.minecraftforge.common.data.DatapackBuiltinEntriesProvider;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -171,7 +171,7 @@ public class ForgeHexDataGenerators {
             return () -> {
                 JsonObject object = new JsonObject();
                 object.addProperty("type", "farmersdelight:tool_action");
-                object.addProperty("action", ToolActions.AXE_STRIP.name());
+                object.addProperty("action", ItemAbilities.AXE_STRIP.name());
                 return object;
             };
         }
@@ -181,7 +181,7 @@ public class ForgeHexDataGenerators {
             return () -> {
                 JsonObject object = new JsonObject();
                 object.addProperty("type", "farmersdelight:tool_action");
-                object.addProperty("action", ToolActions.AXE_DIG.name());
+                object.addProperty("action", ItemAbilities.AXE_DIG.name());
                 return object;
             };
         }

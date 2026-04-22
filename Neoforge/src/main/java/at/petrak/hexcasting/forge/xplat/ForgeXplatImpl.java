@@ -72,20 +72,20 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.*;
-import net.minecraftforge.common.loot.CanToolPerformAction;
-import net.minecraftforge.common.util.FakePlayerFactory;
-import net.minecraftforge.event.level.BlockEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.common.*;
+import net.neoforged.neoforge.common.loot.CanToolPerformAction;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.loading.FMLLoader;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.neoforge.network.NetworkDirection;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import top.theillusivec4.caelus.api.CaelusApi;
 import virtuoel.pehkui.api.ScaleTypes;
@@ -448,7 +448,7 @@ public class ForgeXplatImpl implements IXplatAbstractions {
 
     @Override
     public LootItemCondition.Builder isShearsCondition() {
-        return CanToolPerformAction.canToolPerformAction(ToolActions.SHEARS_DIG);
+        return CanToolPerformAction.canToolPerformAction(ItemAbilities.SHEARS_DIG);
     }
 
     @Override
@@ -526,7 +526,7 @@ public class ForgeXplatImpl implements IXplatAbstractions {
     public boolean isBreakingAllowed(ServerLevel world, BlockPos pos, BlockState state, @Nullable Player player) {
         if (player == null)
             player = FakePlayerFactory.get(world, HEXCASTING);
-        return !MinecraftForge.EVENT_BUS.post(new BlockEvent.BreakEvent(world, pos, state, player));
+        return !NeoForge.EVENT_BUS.post(new BlockEvent.BreakEvent(world, pos, state, player));
     }
 
     @Override
