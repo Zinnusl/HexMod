@@ -1,12 +1,24 @@
 @file:JvmName("NBTHelper")
 
-// TODO this entire file needs to be HEAVILY refactored. also i need to understand components
-
 package at.petrak.hexcasting.api.utils
 
+import net.minecraft.core.component.DataComponents
 import net.minecraft.nbt.*
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.component.CustomData
 import java.util.*
+
+// ItemStack-level NBT was removed in 1.20.5 in favour of DataComponents. Hex uses dynamic
+// string keys so we persist everything into the CUSTOM_DATA component, which wraps a
+// CompoundTag and is intended for exactly this bridge case. Read paths return a snapshot
+// copy; write paths funnel through CustomData.update so mutations persist.
+
+internal val ItemStack.hexCustomTag: CompoundTag?
+    get() = this.get(DataComponents.CUSTOM_DATA)?.copyTag()
+
+internal inline fun ItemStack.hexUpdateCustomTag(block: (CompoundTag) -> Unit) {
+    CustomData.update(DataComponents.CUSTOM_DATA, this) { block(it) }
+}
 
 private inline fun <T : Any, K, E> T?.getIf(key: K, predicate: T?.(K) -> Boolean, get: T.(K) -> E): E? =
     getIf(key, predicate, get, null)
@@ -192,93 +204,105 @@ val Tag.asUUID: UUID get() = if (this is IntArrayTag && this.size == 4) NbtUtils
 
 // Checks for containment
 
-fun ItemStack.hasNumber(key: String) = tag.hasNumber(key)
-fun ItemStack.hasByte(key: String) = tag.hasByte(key)
-fun ItemStack.hasShort(key: String) = tag.hasShort(key)
-fun ItemStack.hasInt(key: String) = tag.hasInt(key)
-fun ItemStack.hasLong(key: String) = tag.hasLong(key)
-fun ItemStack.hasFloat(key: String) = tag.hasFloat(key)
-fun ItemStack.hasDouble(key: String) = tag.hasDouble(key)
-fun ItemStack.hasLongArray(key: String) = tag.hasLongArray(key)
-fun ItemStack.hasIntArray(key: String) = tag.hasIntArray(key)
-fun ItemStack.hasByteArray(key: String) = tag.hasByteArray(key)
-fun ItemStack.hasCompound(key: String) = tag.hasCompound(key)
-fun ItemStack.hasString(key: String) = tag.hasString(key)
-fun ItemStack.hasList(key: String) = tag.hasList(key)
-fun ItemStack.hasList(key: String, objType: Int) = tag.hasList(key, objType)
-fun ItemStack.hasList(key: String, objType: Byte) = tag.hasList(key, objType)
-fun ItemStack.hasUUID(key: String) = tag.hasUUID(key)
+fun ItemStack.hasNumber(key: String) = hexCustomTag.hasNumber(key)
+fun ItemStack.hasByte(key: String) = hexCustomTag.hasByte(key)
+fun ItemStack.hasShort(key: String) = hexCustomTag.hasShort(key)
+fun ItemStack.hasInt(key: String) = hexCustomTag.hasInt(key)
+fun ItemStack.hasLong(key: String) = hexCustomTag.hasLong(key)
+fun ItemStack.hasFloat(key: String) = hexCustomTag.hasFloat(key)
+fun ItemStack.hasDouble(key: String) = hexCustomTag.hasDouble(key)
+fun ItemStack.hasLongArray(key: String) = hexCustomTag.hasLongArray(key)
+fun ItemStack.hasIntArray(key: String) = hexCustomTag.hasIntArray(key)
+fun ItemStack.hasByteArray(key: String) = hexCustomTag.hasByteArray(key)
+fun ItemStack.hasCompound(key: String) = hexCustomTag.hasCompound(key)
+fun ItemStack.hasString(key: String) = hexCustomTag.hasString(key)
+fun ItemStack.hasList(key: String) = hexCustomTag.hasList(key)
+fun ItemStack.hasList(key: String, objType: Int) = hexCustomTag.hasList(key, objType)
+fun ItemStack.hasList(key: String, objType: Byte) = hexCustomTag.hasList(key, objType)
+fun ItemStack.hasUUID(key: String) = hexCustomTag.hasUUID(key)
 
 @JvmName("contains")
-fun ItemStack.containsTag(key: String) = tag.contains(key)
+fun ItemStack.containsTag(key: String) = hexCustomTag.contains(key)
 
 @JvmName("contains")
-fun ItemStack.containsTag(key: String, id: Byte) = tag.contains(key, id)
+fun ItemStack.containsTag(key: String, id: Byte) = hexCustomTag.contains(key, id)
 
 @JvmName("contains")
-fun ItemStack.containsTag(key: String, id: Int) = tag.contains(key, id)
+fun ItemStack.containsTag(key: String, id: Int) = hexCustomTag.contains(key, id)
 
 // Puts
 
-fun ItemStack.putBoolean(key: String, value: Boolean) = orCreateTag.putBoolean(key, value)
-fun ItemStack.putByte(key: String, value: Byte) = orCreateTag.putByte(key, value)
-fun ItemStack.putShort(key: String, value: Short) = orCreateTag.putShort(key, value)
-fun ItemStack.putInt(key: String, value: Int) = orCreateTag.putInt(key, value)
-fun ItemStack.putLong(key: String, value: Long) = orCreateTag.putLong(key, value)
-fun ItemStack.putFloat(key: String, value: Float) = orCreateTag.putFloat(key, value)
-fun ItemStack.putDouble(key: String, value: Double) = orCreateTag.putDouble(key, value)
+fun ItemStack.putBoolean(key: String, value: Boolean) = hexUpdateCustomTag { it.putBoolean(key, value) }
+fun ItemStack.putByte(key: String, value: Byte) = hexUpdateCustomTag { it.putByte(key, value) }
+fun ItemStack.putShort(key: String, value: Short) = hexUpdateCustomTag { it.putShort(key, value) }
+fun ItemStack.putInt(key: String, value: Int) = hexUpdateCustomTag { it.putInt(key, value) }
+fun ItemStack.putLong(key: String, value: Long) = hexUpdateCustomTag { it.putLong(key, value) }
+fun ItemStack.putFloat(key: String, value: Float) = hexUpdateCustomTag { it.putFloat(key, value) }
+fun ItemStack.putDouble(key: String, value: Double) = hexUpdateCustomTag { it.putDouble(key, value) }
 
-fun ItemStack.putLongArray(key: String, value: LongArray) = orCreateTag.putLongArray(key, value)
-fun ItemStack.putIntArray(key: String, value: IntArray) = orCreateTag.putIntArray(key, value)
-fun ItemStack.putByteArray(key: String, value: ByteArray) = orCreateTag.putByteArray(key, value)
-fun ItemStack.putCompound(key: String, value: CompoundTag) = putTag(key, value)
-fun ItemStack.putString(key: String, value: String) = orCreateTag.putString(key, value)
-fun ItemStack.putList(key: String, value: ListTag) = putTag(key, value)
-fun ItemStack.putUUID(key: String, value: UUID) = orCreateTag.putUUID(key, value)
+fun ItemStack.putLongArray(key: String, value: LongArray) = hexUpdateCustomTag { it.putLongArray(key, value) }
+fun ItemStack.putIntArray(key: String, value: IntArray) = hexUpdateCustomTag { it.putIntArray(key, value) }
+fun ItemStack.putByteArray(key: String, value: ByteArray) = hexUpdateCustomTag { it.putByteArray(key, value) }
+fun ItemStack.putCompound(key: String, value: CompoundTag) = hexUpdateCustomTag { it.put(key, value) }
+fun ItemStack.putString(key: String, value: String) = hexUpdateCustomTag { it.putString(key, value) }
+fun ItemStack.putList(key: String, value: ListTag) = hexUpdateCustomTag { it.put(key, value) }
+fun ItemStack.putUUID(key: String, value: UUID) = hexUpdateCustomTag { it.putUUID(key, value) }
 
 @JvmName("put")
-fun ItemStack.putTag(key: String, value: Tag) = orCreateTag.put(key, value)
+fun ItemStack.putTag(key: String, value: Tag) = hexUpdateCustomTag { it.put(key, value) }
 
 // Remove
 
-fun ItemStack.remove(key: String) = removeTagKey(key)
+fun ItemStack.remove(key: String) = hexUpdateCustomTag { it.remove(key) }
 
 // Gets
 
 @JvmOverloads
-fun ItemStack.getBoolean(key: String, defaultExpected: Boolean = false) = tag.getBoolean(key, defaultExpected)
+fun ItemStack.getBoolean(key: String, defaultExpected: Boolean = false) = hexCustomTag.getBoolean(key, defaultExpected)
 
 @JvmOverloads
-fun ItemStack.getByte(key: String, defaultExpected: Byte = 0) = tag.getByte(key, defaultExpected)
+fun ItemStack.getByte(key: String, defaultExpected: Byte = 0) = hexCustomTag.getByte(key, defaultExpected)
 
 @JvmOverloads
-fun ItemStack.getShort(key: String, defaultExpected: Short = 0) = tag.getShort(key, defaultExpected)
+fun ItemStack.getShort(key: String, defaultExpected: Short = 0) = hexCustomTag.getShort(key, defaultExpected)
 
 @JvmOverloads
-fun ItemStack.getInt(key: String, defaultExpected: Int = 0) = tag.getInt(key, defaultExpected)
+fun ItemStack.getInt(key: String, defaultExpected: Int = 0) = hexCustomTag.getInt(key, defaultExpected)
 
 @JvmOverloads
-fun ItemStack.getLong(key: String, defaultExpected: Long = 0) = tag.getLong(key, defaultExpected)
+fun ItemStack.getLong(key: String, defaultExpected: Long = 0) = hexCustomTag.getLong(key, defaultExpected)
 
 @JvmOverloads
-fun ItemStack.getFloat(key: String, defaultExpected: Float = 0f) = tag.getFloat(key, defaultExpected)
+fun ItemStack.getFloat(key: String, defaultExpected: Float = 0f) = hexCustomTag.getFloat(key, defaultExpected)
 
 @JvmOverloads
-fun ItemStack.getDouble(key: String, defaultExpected: Double = 0.0) = tag.getDouble(key, defaultExpected)
+fun ItemStack.getDouble(key: String, defaultExpected: Double = 0.0) = hexCustomTag.getDouble(key, defaultExpected)
 
-fun ItemStack.getLongArray(key: String) = tag.getLongArray(key)
-fun ItemStack.getIntArray(key: String) = tag.getIntArray(key)
-fun ItemStack.getByteArray(key: String) = tag.getByteArray(key)
-fun ItemStack.getCompound(key: String) = tag.getCompound(key)
-fun ItemStack.getString(key: String) = tag.getString(key)
-fun ItemStack.getList(key: String, objType: Int) = tag.getList(key, objType)
-fun ItemStack.getUUID(key: String) = tag.getUUID(key)
+fun ItemStack.getLongArray(key: String) = hexCustomTag.getLongArray(key)
+fun ItemStack.getIntArray(key: String) = hexCustomTag.getIntArray(key)
+fun ItemStack.getByteArray(key: String) = hexCustomTag.getByteArray(key)
+fun ItemStack.getCompound(key: String) = hexCustomTag.getCompound(key)
+fun ItemStack.getString(key: String) = hexCustomTag.getString(key)
+fun ItemStack.getList(key: String, objType: Int) = hexCustomTag.getList(key, objType)
+fun ItemStack.getUUID(key: String) = hexCustomTag.getUUID(key)
 
 @JvmName("get")
-fun ItemStack.getTag(key: String) = tag.get(key)
+fun ItemStack.getTag(key: String) = hexCustomTag?.get(key)
 
 // Get-or-create
+//
+// Returned CompoundTag is a COPY from CUSTOM_DATA and mutations on it do NOT persist.
+// Callers that want to mutate must use putCompound(key, tag) to write the mutated copy
+// back, or call hexUpdateCustomTag directly for atomic in-place edits.
 
-fun ItemStack.getOrCreateCompound(key: String): CompoundTag = getOrCreateTagElement(key)
-fun ItemStack.getOrCreateList(key: String, objType: Byte) = orCreateTag.getOrCreateList(key, objType)
-fun ItemStack.getOrCreateList(key: String, objType: Int) = orCreateTag.getOrCreateList(key, objType)
+fun ItemStack.getOrCreateCompound(key: String): CompoundTag {
+    val cur = hexCustomTag?.getCompound(key)
+    return cur ?: CompoundTag()
+}
+
+fun ItemStack.getOrCreateList(key: String, objType: Byte): ListTag {
+    val cur = hexCustomTag
+    return if (cur != null && cur.hasList(key, objType)) cur.getList(key, objType.toInt()) else ListTag()
+}
+
+fun ItemStack.getOrCreateList(key: String, objType: Int): ListTag = getOrCreateList(key, objType.toByte())

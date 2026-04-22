@@ -122,7 +122,7 @@ class GuiSpellcasting constructor(
         val player = minecraft.player
         if (player != null) {
             val heldItem = player.getItemInHand(handOpenedWith)
-            if (heldItem.isEmpty || !heldItem.`is`(HexTags.Items.STAVES) || player.getAttributeValue(HexAttributes.FEEBLE_MIND) > 0)
+            if (heldItem.isEmpty || !heldItem.`is`(HexTags.Items.STAVES) || player.getAttributeValue(HexAttributes.holder(HexAttributes.FEEBLE_MIND)) > 0)
                 closeForReal()
         }
     }
@@ -291,8 +291,8 @@ class GuiSpellcasting constructor(
         return false
     }
 
-    override fun mouseScrolled(pMouseX: Double, pMouseY: Double, pDelta: Double): Boolean {
-        super.mouseScrolled(pMouseX, pMouseY, pDelta)
+    override fun mouseScrolled(pMouseX: Double, pMouseY: Double, pDeltaX: Double, pDelta: Double): Boolean {
+        super.mouseScrolled(pMouseX, pMouseY, pDeltaX, pDelta)
 
         val mouseHandler = Minecraft.getInstance().mouseHandler
 
@@ -492,7 +492,7 @@ class GuiSpellcasting constructor(
 
     /** Distance between adjacent hex centers */
     fun hexSize(): Float {
-        val scaleModifier = Minecraft.getInstance().player!!.getAttributeValue(HexAttributes.GRID_ZOOM)
+        val scaleModifier = Minecraft.getInstance().player!!.getAttributeValue(HexAttributes.holder(HexAttributes.GRID_ZOOM))
 
         // Originally, we allowed 32 dots across. Assuming a 1920x1080 screen this allowed like 500-odd area.
         // Let's be generous and give them 512.
