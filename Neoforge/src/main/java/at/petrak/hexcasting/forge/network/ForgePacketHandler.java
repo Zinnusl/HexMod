@@ -1,6 +1,7 @@
 package at.petrak.hexcasting.forge.network;
 
-import net.neoforged.neoforge.network.PacketDistributor;
+import at.petrak.hexcasting.common.msgs.IMessage;
+import net.minecraft.server.level.ServerPlayer;
 
 /**
  * TODO(port-1.21): networking on NeoForge 1.21 moved from SimpleChannel /
@@ -13,10 +14,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  *   <li>a handler {@code (MsgX, IPayloadContext)} bound in
  *       {@link net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent}</li>
  * </ul>
- * The old imperative {@code NETWORK.registerMessage} chain here has no direct
- * equivalent — registration happens per-payload on the mod bus. This class is kept
- * as a compile stub so callers of {@code ForgePacketHandler.init()} still resolve;
- * real wiring lives in a future {@code ForgeHexInitializer} subscription.
+ * This class is kept as a compile stub so callers of {@code ForgePacketHandler.init()}
+ * / {@code getNetwork().sendTo*} still resolve; real wiring lives in a future
+ * {@code ForgeHexInitializer} subscription.
  */
 public class ForgePacketHandler {
     public static void init() {
@@ -24,12 +24,20 @@ public class ForgePacketHandler {
     }
 
     /**
-     * Legacy callers (e.g. {@code ForgeHexInitializer}'s StartTracking listener) use
-     * this to send to a specific player. Return the vanilla {@link PacketDistributor}
-     * pattern — individual messages will reach it once they implement
-     * {@link net.minecraft.network.protocol.common.custom.CustomPacketPayload}.
+     * Stub network facade. The pre-1.20.5 shape exposed {@code PacketDistributor} enum
+     * targets ({@code PLAYER}, {@code TRACKING_ENTITY}, …) on this return value; those
+     * are gone on 1.21 and replaced by static {@code PacketDistributor.sendToPlayer}
+     * et al. that take a {@link net.minecraft.network.protocol.common.custom.CustomPacketPayload}.
+     * Return a facade whose send helpers are no-ops for the duration of the port.
      */
-    public static PacketDistributor getNetwork() {
-        return PacketDistributor.PLAYER;
+    public static Facade getNetwork() {
+        return FACADE;
+    }
+
+    private static final Facade FACADE = new Facade();
+
+    public static final class Facade {
+        public void sendTo(ServerPlayer player, IMessage message) { }
+        public void sendToServer(IMessage message) { }
     }
 }

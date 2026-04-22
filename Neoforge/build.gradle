@@ -164,7 +164,10 @@ sourceSets {
     // ForgeClientXplatImpl: re-enabled. Cap-dependent ClientCastingStack lookup returns
     // an empty stack; texture filter-save/restore is a one-way set now.
     // main.java.exclude 'at/petrak/hexcasting/forge/xplat/ForgeClientXplatImpl.java'
-    main.java.exclude 'at/petrak/hexcasting/forge/network/**'
+    // forge/network ported onto CustomPacketPayload-compatible signatures (Msg*Ack
+    // serialize/deserialize on RegistryFriendlyByteBuf); ForgePacketHandler is a stub
+    // until RegisterPayloadHandlersEvent wiring lands.
+    // main.java.exclude 'at/petrak/hexcasting/forge/network/**'
     // forge/recipe ported on the 1.21 Ingredient codec surface.
     // main.java.exclude 'at/petrak/hexcasting/forge/recipe/**'
     // forge/loot re-enabled after LootModifier MapCodec port.

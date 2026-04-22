@@ -24,15 +24,15 @@ public record MsgPigmentUpdateAck(FrozenPigment update) implements IMessage {
 
     public static MsgPigmentUpdateAck deserialize(RegistryFriendlyByteBuf buffer) {
         var buf = buffer;
-
-        var tag = buf.readAnySizeNbt();
-        var colorizer = FrozenPigment.fromNBT(tag);
+        // 1.21: readAnySizeNbt removed; use unlimited NbtAccounter + cast to CompoundTag.
+        var tag = (net.minecraft.nbt.CompoundTag) buf.readNbt(net.minecraft.nbt.NbtAccounter.unlimitedHeap());
+        var colorizer = FrozenPigment.fromNBT(tag, buf.registryAccess());
         return new MsgPigmentUpdateAck(colorizer);
     }
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
-        buf.writeNbt(this.update.serializeToNBT());
+        buf.writeNbt(this.update.serializeToNBT(buf.registryAccess()));
     }
 
     public static void handle(MsgPigmentUpdateAck self) {
