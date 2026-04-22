@@ -5,6 +5,7 @@ import at.petrak.hexcasting.xplat.IClientXplatAbstractions;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
@@ -21,9 +22,8 @@ public record MsgNewSpiralPatternsS2C(UUID playerUUID, List<HexPattern> patterns
         return ID;
     }
 
-    public static MsgNewSpiralPatternsS2C deserialize(ByteBuf buffer) {
-        var buf = new FriendlyByteBuf(buffer);
-
+    public static MsgNewSpiralPatternsS2C deserialize(RegistryFriendlyByteBuf buffer) {
+        var buf = buffer;
         var player = buf.readUUID();
         var patterns = buf.readCollection(ArrayList::new, buff -> HexPattern.fromNBT(buf.readNbt()));
         var lifetime = buf.readInt();
@@ -33,7 +33,7 @@ public record MsgNewSpiralPatternsS2C(UUID playerUUID, List<HexPattern> patterns
     }
 
     @Override
-    public void serialize(FriendlyByteBuf buf) {
+    public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeUUID(playerUUID);
         buf.writeCollection(patterns, (buff, pattern) -> buff.writeNbt(pattern.serializeToNBT()));
         buf.writeInt(lifetime);

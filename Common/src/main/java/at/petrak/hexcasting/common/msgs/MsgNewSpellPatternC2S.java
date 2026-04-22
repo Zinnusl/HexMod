@@ -5,6 +5,7 @@ import at.petrak.hexcasting.api.casting.eval.env.StaffCastEnv;
 import at.petrak.hexcasting.api.casting.math.HexPattern;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,8 +30,8 @@ public record MsgNewSpellPatternC2S(InteractionHand handUsed, HexPattern pattern
         return ID;
     }
 
-    public static MsgNewSpellPatternC2S deserialize(ByteBuf buffer) {
-        var buf = new FriendlyByteBuf(buffer);
+    public static MsgNewSpellPatternC2S deserialize(RegistryFriendlyByteBuf buffer) {
+        var buf = buffer;
         var hand = buf.readEnum(InteractionHand.class);
         var pattern = HexPattern.fromNBT(buf.readNbt());
 
@@ -43,7 +44,7 @@ public record MsgNewSpellPatternC2S(InteractionHand handUsed, HexPattern pattern
     }
 
     @Override
-    public void serialize(FriendlyByteBuf buf) {
+    public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeEnum(handUsed);
         buf.writeNbt(this.pattern.serializeToNBT());
         buf.writeInt(this.resolvedPatterns.size());

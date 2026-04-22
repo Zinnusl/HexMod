@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -23,20 +24,21 @@ public record MsgNewWallScrollS2C(ClientboundAddEntityPacket inner, BlockPos pos
     }
 
     @Override
-    public void serialize(FriendlyByteBuf buf) {
-        inner.write(buf);
+    public void serialize(RegistryFriendlyByteBuf buf) {
+        // 1.21: ClientboundAddEntityPacket#write became private; use its STREAM_CODEC.
+        ClientboundAddEntityPacket.STREAM_CODEC.encode(buf, inner);
         buf.writeBlockPos(pos);
         buf.writeByte(dir.ordinal());
-        buf.writeItem(scrollItem);
+        net.minecraft.world.item.ItemStack.STREAM_CODEC.encode(buf, scrollItem);
         buf.writeBoolean(showsStrokeOrder);
         buf.writeVarInt(blockSize);
     }
 
-    public static MsgNewWallScrollS2C deserialize(FriendlyByteBuf buf) {
-        var inner = new ClientboundAddEntityPacket(buf);
+    public static MsgNewWallScrollS2C deserialize(RegistryFriendlyByteBuf buf) {
+        var inner = ClientboundAddEntityPacket.STREAM_CODEC.decode(buf);
         var pos = buf.readBlockPos();
         var dir = HexUtils.getSafe(Direction.values(), buf.readByte());
-        var scroll = buf.readItem();
+        var scroll = net.minecraft.world.item.ItemStack.STREAM_CODEC.decode(buf);
         var strokeOrder = buf.readBoolean();
         var blockSize = buf.readVarInt();
         return new MsgNewWallScrollS2C(inner, pos, dir, scroll, strokeOrder, blockSize);

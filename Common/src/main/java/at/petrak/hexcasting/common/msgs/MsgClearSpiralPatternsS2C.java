@@ -4,6 +4,7 @@ import at.petrak.hexcasting.xplat.IClientXplatAbstractions;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.UUID;
@@ -18,16 +19,15 @@ public record MsgClearSpiralPatternsS2C(UUID playerUUID) implements IMessage {
         return ID;
     }
 
-    public static MsgClearSpiralPatternsS2C deserialize(ByteBuf buffer) {
-        var buf = new FriendlyByteBuf(buffer);
-
+    public static MsgClearSpiralPatternsS2C deserialize(RegistryFriendlyByteBuf buffer) {
+        var buf = buffer;
         var player = buf.readUUID();
 
         return new MsgClearSpiralPatternsS2C(player);
     }
 
     @Override
-    public void serialize(FriendlyByteBuf buf) {
+    public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeUUID(playerUUID);
     }
 

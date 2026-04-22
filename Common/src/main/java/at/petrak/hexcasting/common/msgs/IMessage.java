@@ -7,20 +7,20 @@ import net.minecraft.resources.ResourceLocation;
 /**
  * 1.21: Vanilla networking moved to {@link CustomPacketPayload} backed by a
  * {@code StreamCodec<RegistryFriendlyByteBuf, T>}. Hex's legacy IMessage contract
- * (a serialize(FriendlyByteBuf) + getFabricId pair) is stubbed here so the existing
+ * (a serialize(RegistryFriendlyByteBuf) + getFabricId pair) is stubbed here so the existing
  * message types still compile; platform plumbing that actually registers packets needs
  * to wire real CustomPacketPayload.Type + streamCodec for each message.
  * <p>
  * TODO(port-1.21): implement CustomPacketPayload on each Msg* and remove this shim.
  */
 public interface IMessage extends CustomPacketPayload {
-    default net.minecraft.network.FriendlyByteBuf toBuf() {
-        var ret = new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
-        serialize(ret);
-        return ret;
+    default RegistryFriendlyByteBuf toBuf() {
+        // Without registry access this is a placeholder; real serialization goes through
+        // the CustomPacketPayload streamCodec wired per-message on the platform side.
+        throw new UnsupportedOperationException("TODO(port-1.21): route through StreamCodec");
     }
 
-    default void serialize(net.minecraft.network.FriendlyByteBuf buf) {
+    default void serialize(RegistryFriendlyByteBuf buf) {
     }
 
     default ResourceLocation getFabricId() {

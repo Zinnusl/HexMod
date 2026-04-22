@@ -4,6 +4,7 @@ import at.petrak.hexcasting.common.entities.EntityWallScroll;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 import static at.petrak.hexcasting.api.HexAPI.modLoc;
@@ -14,15 +15,15 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
 public record MsgRecalcWallScrollDisplayS2C(int entityId, boolean showStrokeOrder) implements IMessage {
     public static final ResourceLocation ID = modLoc("redoscroll");
 
-    public static MsgRecalcWallScrollDisplayS2C deserialize(ByteBuf buffer) {
-        var buf = new FriendlyByteBuf(buffer);
+    public static MsgRecalcWallScrollDisplayS2C deserialize(RegistryFriendlyByteBuf buffer) {
+        var buf = buffer;
         var id = buf.readVarInt();
         var showStrokeOrder = buf.readBoolean();
         return new MsgRecalcWallScrollDisplayS2C(id, showStrokeOrder);
     }
 
     @Override
-    public void serialize(FriendlyByteBuf buf) {
+    public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeVarInt(entityId);
         buf.writeBoolean(showStrokeOrder);
     }
