@@ -2,9 +2,6 @@ package at.petrak.hexcasting.api.casting.iota;
 
 import at.petrak.hexcasting.api.utils.HexUtils;
 import at.petrak.hexcasting.common.lib.hex.HexIotaTypes;
-import com.samsthenerd.inline.api.InlineAPI;
-import com.samsthenerd.inline.api.data.EntityInlineData;
-import com.samsthenerd.inline.api.data.PlayerHeadData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -13,7 +10,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,20 +48,11 @@ public class EntityIota extends Iota {
         return getEntityNameWithInline(false).copy().withStyle(ChatFormatting.AQUA);
     }
 
-    private Component getEntityNameWithInline(boolean fearSerializer){
+    private Component getEntityNameWithInline(boolean fearSerializer) {
+        // Inline mod has no 1.21 build yet; drop the fancy entity-icon decoration and
+        // fall back to the plain entity name. TODO(port-1.21): restore when inline ships.
         MutableComponent baseName = this.getEntity().getName().copy();
-        Component inlineEnt = null;
-        if(this.getEntity() instanceof Player player){
-            inlineEnt = new PlayerHeadData(player.getGameProfile()).asText(!fearSerializer);
-            inlineEnt = inlineEnt.plainCopy().withStyle(InlineAPI.INSTANCE.withSizeModifier(inlineEnt.getStyle(), 1.5));
-        } else{
-            if(fearSerializer){ // we don't want to have to serialize an entity just to display it
-                inlineEnt = EntityInlineData.fromType(this.getEntity().getType()).asText(!fearSerializer);
-            } else {
-                inlineEnt = EntityInlineData.fromEntity(this.getEntity()).asText(!fearSerializer);
-            }
-        }
-        return baseName.append(Component.literal(": ")).append(inlineEnt);
+        return baseName;
     }
 
     public static IotaType<EntityIota> TYPE = new IotaType<>() {

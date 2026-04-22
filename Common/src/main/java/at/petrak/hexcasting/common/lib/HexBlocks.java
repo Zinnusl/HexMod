@@ -25,6 +25,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.block.*;
+import net.minecraft.util.ColorRGBA;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
@@ -213,17 +214,18 @@ public class HexBlocks {
     public static final Block SLATE_BRICKS = blockItem("slate_bricks", new Block(slateish().strength(2f, 4f)));
     public static final Block SLATE_BRICKS_SMALL = blockItem("slate_bricks_small", new Block(slateish().strength(2f, 4f)));
     public static final RotatedPillarBlock SLATE_PILLAR = blockItem("slate_pillar", new RotatedPillarBlock(slateish().strength(2f, 4f)));
-    public static final SandBlock AMETHYST_DUST_BLOCK = blockItem("amethyst_dust_block",
-        new SandBlock(0xff_b38ef3, BlockBehaviour.Properties.copy(Blocks.SAND).mapColor(MapColor.COLOR_PURPLE)
+    // 1.21: SandBlock was renamed ColoredFallingBlock and now takes a ColorRGBA for the dust colour.
+    public static final ColoredFallingBlock AMETHYST_DUST_BLOCK = blockItem("amethyst_dust_block",
+        new ColoredFallingBlock(new ColorRGBA(0xff_b38ef3), BlockBehaviour.Properties.ofFullCopy(Blocks.SAND).mapColor(MapColor.COLOR_PURPLE)
             .strength(0.5f).sound(SoundType.SAND)));
     public static final AmethystBlock AMETHYST_TILES = blockItem("amethyst_tiles",
-        new AmethystBlock(BlockBehaviour.Properties.copy(Blocks.AMETHYST_BLOCK)));
+        new AmethystBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_BLOCK)));
     public static final AmethystBlock AMETHYST_BRICKS = blockItem("amethyst_bricks",
-            new AmethystBlock(BlockBehaviour.Properties.copy(Blocks.AMETHYST_BLOCK)));
+            new AmethystBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_BLOCK)));
     public static final AmethystBlock AMETHYST_BRICKS_SMALL = blockItem("amethyst_bricks_small",
-            new AmethystBlock(BlockBehaviour.Properties.copy(Blocks.AMETHYST_BLOCK)));
+            new AmethystBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_BLOCK)));
     public static final BlockAmethystDirectional AMETHYST_PILLAR = blockItem("amethyst_pillar",
-            new BlockAmethystDirectional(BlockBehaviour.Properties.copy(Blocks.AMETHYST_BLOCK)));
+            new BlockAmethystDirectional(BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_BLOCK)));
     public static final Block SLATE_AMETHYST_TILES = blockItem("slate_amethyst_tiles", new Block(slateish().strength(2f, 4f)));
     public static final Block SLATE_AMETHYST_BRICKS = blockItem("slate_amethyst_bricks", new Block(slateish().strength(2f, 4f)));
     public static final Block SLATE_AMETHYST_BRICKS_SMALL = blockItem("slate_amethyst_bricks_small", new Block(slateish().strength(2f, 4f)));

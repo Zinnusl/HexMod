@@ -33,6 +33,10 @@ dependencies {
     // inline isn't out for 1.21 yet shaking my sm my shaking smh head
 //    compileOnly "com.samsthenerd.inline:inline-forge:$minecraftVersion-$inlineVersion"
 
+    // Mixin annotations — platform jars bring mixin at runtime, but Common only sees
+    // the base Minecraft classpath, so we pull it in explicitly for compile.
+    compileOnly "net.fabricmc:sponge-mixin:0.13.4+mixin.0.8.5"
+
     // === OPTIONAL DEPS ===
     modCompileOnly "dev.emi:emi-xplat-intermediary:${emiVersion}:api"
     compileOnly "io.wispforest:accessories-common:$accessoriesVersion"
@@ -61,3 +65,13 @@ processResources {
 
 // it wants a task by this name to exist for some reason
 task("prepareWorkspace") {}
+
+// Datagen code is excluded from the main source set until it's ported to 1.21 API.
+// The already-generated JSONs in src/generated/resources continue to ship with the mod.
+sourceSets {
+    main {
+        java {
+            exclude 'at/petrak/hexcasting/datagen/**'
+        }
+    }
+}

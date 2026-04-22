@@ -96,50 +96,17 @@ public class HexAPIImpl implements HexAPI {
         return IXplatAbstractions.INSTANCE.getPigment(player);
     }
 
-    ArmorMaterial ARMOR_MATERIAL = new ArmorMaterial() {
-
-        @Override
-        public int getDurabilityForType(ArmorItem.Type type) {
-            return 0;
-        }
-
-        @Override
-        public int getDefenseForType(ArmorItem.Type type) {
-            return 0;
-        }
-
-        @Override
-        public int getEnchantmentValue() {
-            return 0;
-        }
-
-        @NotNull
-        @Override
-        public SoundEvent getEquipSound() {
-            return SoundEvents.ARMOR_EQUIP_LEATHER;
-        }
-
-        @NotNull
-        @Override
-        public Ingredient getRepairIngredient() {
-            return Ingredient.EMPTY;
-        }
-
-        @Override
-        public String getName() {
-            return "robes";
-        }
-
-        @Override
-        public float getToughness() {
-            return 0;
-        }
-
-        @Override
-        public float getKnockbackResistance() {
-            return 0;
-        }
-    };
+    // 1.21: ArmorMaterial is a final record; can't be subclassed. The "robes" material
+    // is a zero-defense placeholder — hex renders its own armour overlay separately.
+    ArmorMaterial ARMOR_MATERIAL = new ArmorMaterial(
+        java.util.Map.of(),
+        0,
+        net.minecraft.core.Holder.direct(SoundEvents.ARMOR_EQUIP_LEATHER),
+        () -> Ingredient.of(),
+        java.util.List.of(),
+        0f,
+        0f
+    );
 
     @Override
     public ArmorMaterial robesMaterial() {

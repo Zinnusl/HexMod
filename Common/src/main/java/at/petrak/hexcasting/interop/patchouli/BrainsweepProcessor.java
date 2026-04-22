@@ -26,7 +26,7 @@ public class BrainsweepProcessor implements IComponentProcessor {
 
 	@Override
 	public void setup(Level level, IVariableProvider vars) {
-		var id = new ResourceLocation(vars.get("recipe").asString());
+		var id = ResourceLocation.parse(vars.get("recipe").asString());
 
 		var recman = level.getRecipeManager();
 		var brainsweepings = recman.getAllRecipesFor(HexRecipeStuffRegistry.BRAINSWEEP_TYPE);

@@ -103,7 +103,7 @@ public abstract class IotaType<T extends Iota> {
         if (!ResourceLocation.isValidResourceLocation(typeKey)) {
             return null;
         }
-        var typeLoc = new ResourceLocation(typeKey);
+        var typeLoc = ResourceLocation.parse(typeKey);
         return HexIotaTypes.REGISTRY.get(typeLoc);
     }
 

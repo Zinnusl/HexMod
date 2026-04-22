@@ -10,7 +10,6 @@ import at.petrak.hexcasting.common.entities.EntityWallScroll;
 import at.petrak.hexcasting.common.lib.hex.HexIotaTypes;
 import at.petrak.hexcasting.common.misc.PatternTooltip;
 import at.petrak.hexcasting.common.casting.PatternRegistryManifest;
-import at.petrak.hexcasting.interop.inline.InlinePatternData;
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -156,7 +155,7 @@ public class ItemScroll extends Item implements IotaHolderItem {
             var patternLabel = Component.literal("");
             if (compound != null) {
                 var pattern = HexPattern.fromNBT(compound);
-                patternLabel = Component.literal(": ").append(new InlinePatternData(pattern).asText(false));
+                patternLabel = Component.literal(": ").append(PatternIota.displayNonInline(pattern));
             }
             return Component.translatable(descID).append(patternLabel);
         } else {

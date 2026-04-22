@@ -83,7 +83,7 @@ public class ScrungledPatternsSave extends SavedData {
             var rawKey = inner.getString(TAG_KEY);
 
             var dir = HexDir.values()[rawDir];
-            var key = ResourceKey.create(registryKey, new ResourceLocation(rawKey));
+            var key = ResourceKey.create(registryKey, ResourceLocation.parse(rawKey));
 
             map.put(sig, new PerWorldEntry(key, dir));
         }

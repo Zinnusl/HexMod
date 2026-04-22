@@ -1,7 +1,6 @@
 package at.petrak.hexcasting.client.render.shader;
 
 import at.petrak.hexcasting.api.HexAPI;
-import at.petrak.hexcasting.mixin.accessor.client.AccessorRenderType;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.Util;
@@ -19,9 +18,11 @@ public final class HexRenderTypes extends RenderType {
         throw new UnsupportedOperationException("Should not be instantiated");
     }
 
+    // 1.21: RenderType.create is protected static; subclasses call it directly.
+    // The CompositeRenderType return type is private, so we widen to RenderType.
     private static RenderType makeLayer(String name, VertexFormat format, VertexFormat.Mode mode,
         int bufSize, boolean hasCrumbling, boolean sortOnUpload, RenderType.CompositeState glState) {
-        return AccessorRenderType.hex$create(name, format, mode, bufSize, hasCrumbling, sortOnUpload, glState);
+        return RenderType.create(name, format, mode, bufSize, hasCrumbling, sortOnUpload, glState);
     }
 
     private static final Function<ResourceLocation, RenderType> GRAYSCALE_PROVIDER = Util.memoize(texture -> {

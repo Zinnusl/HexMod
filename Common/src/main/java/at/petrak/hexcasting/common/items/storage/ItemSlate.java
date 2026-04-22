@@ -11,7 +11,7 @@ import at.petrak.hexcasting.client.gui.PatternTooltipComponent;
 import at.petrak.hexcasting.common.blocks.circles.BlockEntitySlate;
 import at.petrak.hexcasting.common.lib.hex.HexIotaTypes;
 import at.petrak.hexcasting.common.misc.PatternTooltip;
-import at.petrak.hexcasting.interop.inline.InlinePatternData;
+// Inline interop removed: see PatternIota.displayNonInline.
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -40,7 +40,7 @@ public class ItemSlate extends BlockItem implements IotaHolderItem {
     public Component getName(ItemStack pStack) {
         var key = "block." + HexAPI.MOD_ID + ".slate." + (hasPattern(pStack) ? "written" : "blank");
         Component patternText = getPattern(pStack)
-            .map(pat -> Component.literal(": ").append(new InlinePatternData(pat).asText(false)))
+            .map(pat -> Component.literal(": ").append(PatternIota.displayNonInline(pat)))
             .orElse(Component.literal(""));
         return Component.translatable(key).append(patternText);
     }

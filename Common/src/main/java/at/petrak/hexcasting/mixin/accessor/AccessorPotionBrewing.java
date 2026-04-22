@@ -2,13 +2,14 @@ package at.petrak.hexcasting.mixin.accessor;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionBrewing;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(PotionBrewing.class)
-public interface AccessorPotionBrewing {
-    @Invoker("addMix")
-    static void addMix(Potion p_43514_, Item p_43515_, Potion p_43516_) {
+/**
+ * TODO(port-1.21): 1.21 PotionBrewing uses a builder + {@code RegisterBrewingRecipesEvent}
+ * on Neoforge. The old static {@code addMix} entry point is gone. This stub satisfies
+ * {@link at.petrak.hexcasting.common.lib.HexPotions} until the platform init wires up
+ * the new event; calls are no-ops.
+ */
+public class AccessorPotionBrewing {
+    public static void addMix(Potion input, Item reagent, Potion output) {
     }
 }

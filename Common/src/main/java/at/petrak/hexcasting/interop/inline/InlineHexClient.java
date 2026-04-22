@@ -1,11 +1,7 @@
 package at.petrak.hexcasting.interop.inline;
 
-import com.samsthenerd.inline.api.client.InlineClientAPI;
-
+/** See {@link InlineHex}: stub while inline mod has no 1.21 build. */
 public class InlineHexClient {
-
-    public static void init(){
-        InlineClientAPI.INSTANCE.addMatcher(HexPatternMatcher.INSTANCE);
-        InlineClientAPI.INSTANCE.addRenderer(InlinePatternRenderer.INSTANCE);
+    public static void init() {
     }
 }
