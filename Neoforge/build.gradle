@@ -151,9 +151,12 @@ sourceSets {
     main.java.exclude 'at/petrak/hexcasting/forge/cap/**'
     main.java.exclude 'at/petrak/hexcasting/forge/xplat/**'
     main.java.exclude 'at/petrak/hexcasting/forge/network/**'
-    main.java.exclude 'at/petrak/hexcasting/forge/recipe/**'
-    main.java.exclude 'at/petrak/hexcasting/forge/loot/**'
-    main.java.exclude 'at/petrak/hexcasting/forge/lib/**'
+    // forge/recipe ported on the 1.21 Ingredient codec surface.
+    // main.java.exclude 'at/petrak/hexcasting/forge/recipe/**'
+    // forge/loot re-enabled after LootModifier MapCodec port.
+    // main.java.exclude 'at/petrak/hexcasting/forge/loot/**'
+    // forge/lib ported to NeoForge 1.21 DeferredRegister API.
+    // main.java.exclude 'at/petrak/hexcasting/forge/lib/**'
     main.java.exclude 'at/petrak/hexcasting/forge/mixin/**'
     main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexInitializer.java'
     main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexClientInitializer.java'

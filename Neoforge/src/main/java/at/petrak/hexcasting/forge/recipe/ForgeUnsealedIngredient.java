@@ -5,27 +5,43 @@ import at.petrak.hexcasting.api.casting.iota.NullIota;
 import at.petrak.hexcasting.api.item.IotaHolderItem;
 import at.petrak.hexcasting.api.utils.NBTHelper;
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import net.minecraft.network.FriendlyByteBuf;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.common.crafting.AbstractIngredient;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
-import net.neoforged.neoforge.common.crafting.IIngredientSerializer;
-import net.neoforged.neoforge.common.crafting.PartialNBTIngredient;
-import net.neoforged.neoforge.registries.ForgeRegistries;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.neoforge.common.crafting.ICustomIngredient;
+import net.neoforged.neoforge.common.crafting.IngredientType;
 
-import javax.annotation.Nullable;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 import static at.petrak.hexcasting.api.HexAPI.modLoc;
 
-public class ForgeUnsealedIngredient extends AbstractIngredient {
+/**
+ * 1.21: custom ingredients live on {@link ICustomIngredient} with codec/streamCodec, not
+ * the old {@code AbstractIngredient} + {@code IIngredientSerializer}. The IngredientType
+ * itself is registered via DeferredRegister in the platform init.
+ */
+public class ForgeUnsealedIngredient implements ICustomIngredient {
     public static final ResourceLocation ID = modLoc("unsealed");
+
+    public static final MapCodec<ForgeUnsealedIngredient> CODEC = RecordCodecBuilder.mapCodec(inst ->
+        inst.group(
+            ItemStack.CODEC.fieldOf("stack").forGetter(ForgeUnsealedIngredient::getStack)
+        ).apply(inst, ForgeUnsealedIngredient::new)
+    );
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, ForgeUnsealedIngredient> STREAM_CODEC =
+        StreamCodec.composite(
+            ItemStack.STREAM_CODEC, ForgeUnsealedIngredient::getStack,
+            ForgeUnsealedIngredient::new
+        );
+
+    // The IngredientType is wired from the platform init (DeferredRegister<IngredientType<?>>).
+    // Until that's ported, getType() returns null — the type is only consulted on recipe
+    // encode, which doesn't happen before the registry is populated.
+    public static IngredientType<ForgeUnsealedIngredient> TYPE;
 
     private final ItemStack stack;
 
@@ -35,20 +51,20 @@ public class ForgeUnsealedIngredient extends AbstractIngredient {
         return newStack;
     }
 
-    protected ForgeUnsealedIngredient(ItemStack stack) {
-        super(Stream.of(new Ingredient.ItemValue(createStack(stack))));
+    public ForgeUnsealedIngredient(ItemStack stack) {
         this.stack = stack;
     }
 
-    /**
-     * Creates a new ingredient matching the given stack
-     */
     public static ForgeUnsealedIngredient of(ItemStack stack) {
         return new ForgeUnsealedIngredient(stack);
     }
 
+    public ItemStack getStack() {
+        return this.stack;
+    }
+
     @Override
-    public boolean test(@Nullable ItemStack input) {
+    public boolean test(ItemStack input) {
         if (input == null) {
             return false;
         }
@@ -58,8 +74,12 @@ public class ForgeUnsealedIngredient extends AbstractIngredient {
                 return holder.readIotaTag() != null && holder.writeIota(new NullIota(), true);
             }
         }
-
         return false;
+    }
+
+    @Override
+    public Stream<ItemStack> getItems() {
+        return Stream.of(createStack(this.stack));
     }
 
     @Override
@@ -68,36 +88,7 @@ public class ForgeUnsealedIngredient extends AbstractIngredient {
     }
 
     @Override
-    public @NotNull IIngredientSerializer<? extends Ingredient> getSerializer() {
-        return ForgeUnsealedIngredient.Serializer.INSTANCE;
-    }
-
-    @Override
-    public @NotNull JsonElement toJson() {
-        JsonObject json = new JsonObject();
-        // TODO: should this be Partial or Strict
-        json.addProperty("type", Objects.toString(CraftingHelper.getID(PartialNBTIngredient.Serializer.INSTANCE)));
-        json.addProperty("item", Objects.toString(ForgeRegistries.ITEMS.getKey(stack.getItem())));
-        return json;
-    }
-
-
-    public static class Serializer implements IIngredientSerializer<ForgeUnsealedIngredient> {
-        public static final ForgeUnsealedIngredient.Serializer INSTANCE = new ForgeUnsealedIngredient.Serializer();
-
-        @Override
-        public @NotNull ForgeUnsealedIngredient parse(FriendlyByteBuf buffer) {
-            return new ForgeUnsealedIngredient(buffer.readItem());
-        }
-
-        @Override
-        public @NotNull ForgeUnsealedIngredient parse(@NotNull JsonObject json) {
-            return new ForgeUnsealedIngredient(CraftingHelper.getItemStack(json, true));
-        }
-
-        @Override
-        public void write(FriendlyByteBuf buffer, ForgeUnsealedIngredient ingredient) {
-            buffer.writeItem(ingredient.stack);
-        }
+    public IngredientType<?> getType() {
+        return TYPE;
     }
 }

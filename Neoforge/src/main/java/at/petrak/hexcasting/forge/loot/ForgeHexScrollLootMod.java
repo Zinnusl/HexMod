@@ -4,8 +4,8 @@ import at.petrak.hexcasting.common.lib.HexItems;
 import at.petrak.hexcasting.common.loot.AddPerWorldPatternToScrollFunc;
 import at.petrak.hexcasting.common.loot.HexLootHandler;
 import at.petrak.hexcasting.forge.lib.ForgeHexLootMods;
-import com.google.common.base.Suppliers;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.world.item.ItemStack;
@@ -15,16 +15,18 @@ import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.neoforge.common.loot.LootModifier;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Supplier;
 
+/**
+ * 1.21 NeoForge: LootModifier constructor takes {@code List<LootItemCondition>}, and
+ * codec() returns a {@link MapCodec}.
+ */
 public class ForgeHexScrollLootMod extends LootModifier {
-    public static final Supplier<Codec<ForgeHexScrollLootMod>> CODEC =
-        Suppliers.memoize(() -> RecordCodecBuilder.create(
-            inst -> codecStart(inst).and(
-                Codec.INT.fieldOf("countRange").forGetter(it -> it.countRange)
-            ).apply(inst, ForgeHexScrollLootMod::new)
-        ));
-    
+    public static final MapCodec<ForgeHexScrollLootMod> CODEC = RecordCodecBuilder.mapCodec(inst ->
+        codecStart(inst).and(
+            Codec.INT.fieldOf("countRange").forGetter((ForgeHexScrollLootMod it) -> it.countRange)
+        ).apply(inst, ForgeHexScrollLootMod::new)
+    );
+
     public final int countRange;
 
     public ForgeHexScrollLootMod(LootItemCondition[] conditionsIn, int countRange) {
@@ -45,7 +47,7 @@ public class ForgeHexScrollLootMod extends LootModifier {
     }
 
     @Override
-    public Codec<? extends IGlobalLootModifier> codec() {
+    public MapCodec<? extends IGlobalLootModifier> codec() {
         return ForgeHexLootMods.INJECT_SCROLLS.get();
     }
 }

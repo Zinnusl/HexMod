@@ -1,114 +1,91 @@
 package at.petrak.hexcasting.forge.recipe;
 
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import net.minecraft.network.FriendlyByteBuf;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.common.crafting.AbstractIngredient;
-import net.neoforged.neoforge.common.crafting.IIngredientSerializer;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.neoforge.common.crafting.ICustomIngredient;
+import net.neoforged.neoforge.common.crafting.IngredientType;
 
-import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.stream.Stream;
 
 import static at.petrak.hexcasting.api.HexAPI.modLoc;
 
-public class ForgeModConditionalIngredient extends AbstractIngredient {
+/**
+ * 1.21: custom ingredients are ICustomIngredient records with codec/streamCodec. The
+ * old JSON toJson / IIngredientSerializer pair is gone.
+ */
+public class ForgeModConditionalIngredient implements ICustomIngredient {
     public static final ResourceLocation ID = modLoc("mod_conditional");
+
+    public static final MapCodec<ForgeModConditionalIngredient> CODEC = RecordCodecBuilder.mapCodec(inst ->
+        inst.group(
+            Ingredient.CODEC.fieldOf("default").forGetter(ForgeModConditionalIngredient::getMain),
+            com.mojang.serialization.Codec.STRING.fieldOf("modid").forGetter(ForgeModConditionalIngredient::getModid),
+            Ingredient.CODEC.fieldOf("if_loaded").forGetter(ForgeModConditionalIngredient::getIfModLoaded)
+        ).apply(inst, ForgeModConditionalIngredient::new)
+    );
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, ForgeModConditionalIngredient> STREAM_CODEC =
+        StreamCodec.composite(
+            Ingredient.CONTENTS_STREAM_CODEC, ForgeModConditionalIngredient::getMain,
+            ByteBufCodecs.STRING_UTF8, ForgeModConditionalIngredient::getModid,
+            Ingredient.CONTENTS_STREAM_CODEC, ForgeModConditionalIngredient::getIfModLoaded,
+            ForgeModConditionalIngredient::new
+        );
+
+    public static IngredientType<ForgeModConditionalIngredient> TYPE;
 
     private final Ingredient main;
     private final String modid;
     private final Ingredient ifModLoaded;
-
     private final Ingredient toUse;
 
-    protected ForgeModConditionalIngredient(Ingredient main, String modid, Ingredient ifModLoaded) {
-        super(IXplatAbstractions.INSTANCE.isModPresent(modid) ? Arrays.stream(ifModLoaded.values) : Arrays.stream(main.values));
+    public ForgeModConditionalIngredient(Ingredient main, String modid, Ingredient ifModLoaded) {
         this.main = main;
         this.modid = modid;
         this.ifModLoaded = ifModLoaded;
-
         this.toUse = IXplatAbstractions.INSTANCE.isModPresent(modid) ? ifModLoaded : main;
     }
 
-    /**
-     * Creates a new ingredient matching the given stack
-     */
     public static ForgeModConditionalIngredient of(Ingredient main, String modid, Ingredient ifModLoaded) {
         return new ForgeModConditionalIngredient(main, modid, ifModLoaded);
     }
 
+    public Ingredient getMain() {
+        return this.main;
+    }
+
+    public String getModid() {
+        return this.modid;
+    }
+
+    public Ingredient getIfModLoaded() {
+        return this.ifModLoaded;
+    }
+
     @Override
-    public boolean test(@Nullable ItemStack input) {
-        return toUse.test(input);
+    public boolean test(ItemStack input) {
+        return this.toUse.test(input);
+    }
+
+    @Override
+    public Stream<ItemStack> getItems() {
+        return Stream.of(this.toUse.getItems());
     }
 
     @Override
     public boolean isSimple() {
-        return toUse.isSimple();
+        return this.toUse.isSimple();
     }
 
     @Override
-    public @NotNull JsonElement toJson() {
-        JsonObject json = new JsonObject();
-        json.addProperty("type", Objects.toString(ID));
-        json.add("default", main.toJson());
-        json.addProperty("modid", modid);
-        json.add("if_loaded", ifModLoaded.toJson());
-        return json;
-    }
-
-    @Override
-    public @NotNull IIngredientSerializer<? extends Ingredient> getSerializer() {
-        return Serializer.INSTANCE;
-    }
-
-    public static @NotNull Ingredient fromNetwork(FriendlyByteBuf friendlyByteBuf) {
-        return Ingredient.fromNetwork(friendlyByteBuf); // Just send the actual ingredient
-    }
-
-    public static Ingredient fromJson(JsonObject object) {
-        if (object.has("type") && object.getAsJsonPrimitive("type").getAsString().equals(ID.toString())) {
-            if (object.has("modid") && IXplatAbstractions.INSTANCE.isModPresent(object.getAsJsonPrimitive("modid").getAsString())) {
-                try {
-                    Ingredient ingredient = Ingredient.fromJson(object.get("if_loaded"));
-                    if (!ingredient.isEmpty()) {
-                        return ingredient;
-                    }
-                } catch (JsonParseException e) {
-                    // NO-OP
-                }
-            }
-
-            return Ingredient.fromJson(object.get("default"));
-        }
-
-        return Ingredient.of();
-    }
-
-    public static class Serializer implements IIngredientSerializer<Ingredient> {
-        public static final Serializer INSTANCE = new Serializer();
-
-        @Override
-        public @NotNull Ingredient parse(@NotNull FriendlyByteBuf buffer) {
-            return fromNetwork(buffer);
-        }
-
-        @Override
-        public @NotNull Ingredient parse(@NotNull JsonObject json) {
-            return fromJson(json);
-        }
-
-        @Override
-        public void write(@NotNull FriendlyByteBuf buffer, @NotNull Ingredient ingredient) {
-            if (ingredient instanceof ForgeModConditionalIngredient conditionalIngredient)
-                conditionalIngredient.toUse.toNetwork(buffer);
-            // It shouldn't be possible to not be a ForgeModConditionalIngredient here
-        }
+    public IngredientType<?> getType() {
+        return TYPE;
     }
 }
