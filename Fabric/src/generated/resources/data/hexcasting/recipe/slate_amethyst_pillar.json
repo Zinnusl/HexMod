@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    {
-      "item": "hexcasting:slate_pillar"
-    },
-    {
-      "item": "hexcasting:amethyst_pillar"
-    }
+    "hexcasting:slate_pillar",
+    "hexcasting:amethyst_pillar"
   ],
   "result": {
     "id": "hexcasting:slate_amethyst_pillar",

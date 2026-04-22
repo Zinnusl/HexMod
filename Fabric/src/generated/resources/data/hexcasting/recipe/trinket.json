@@ -3,16 +3,10 @@
   "category": "equipment",
   "key": {
     "C": [
-      {
-        "item": "minecraft:iron_ingot"
-      },
-      {
-        "tag": "c:iron_ingots"
-      }
+      "minecraft:iron_ingot",
+      "#c:iron_ingots"
     ],
-    "I": {
-      "item": "minecraft:amethyst_shard"
-    }
+    "I": "minecraft:amethyst_shard"
   },
   "pattern": [
     " C ",

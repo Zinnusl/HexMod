@@ -1,32 +1,23 @@
 {
-  "type": "c:conditional",
-  "recipes": [
+  "type": "create:crushing",
+  "ingredients": [
+    "minecraft:amethyst_shard"
+  ],
+  "processingTime": 150,
+  "results": [
     {
-      "conditions": [
-        {
-          "type": "c:mod_loaded",
-          "modid": "create"
-        }
-      ],
-      "recipe": {
-        "type": "create:crushing",
-        "ingredients": [
-          {
-            "item": "minecraft:amethyst_shard"
-          }
-        ],
-        "processingTime": 150,
-        "results": [
-          {
-            "count": 4,
-            "item": "hexcasting:amethyst_dust"
-          },
-          {
-            "chance": 0.5,
-            "item": "hexcasting:amethyst_dust"
-          }
-        ]
-      }
+      "count": 4,
+      "item": "hexcasting:amethyst_dust"
+    },
+    {
+      "chance": 0.5,
+      "item": "hexcasting:amethyst_dust"
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "create"
     }
   ]
 }

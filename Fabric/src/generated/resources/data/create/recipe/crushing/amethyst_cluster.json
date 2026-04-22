@@ -9,9 +9,7 @@
   ],
   "type": "create:crushing",
   "ingredients": [
-    {
-      "item": "minecraft:amethyst_cluster"
-    }
+    "minecraft:amethyst_cluster"
   ],
   "processingTime": 150,
   "results": [

@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "C": {
-      "item": "minecraft:paper"
-    },
-    "D": {
-      "item": "minecraft:paper"
-    },
-    "I": {
-      "item": "minecraft:amethyst_shard"
-    }
+    "C": "minecraft:paper",
+    "D": "minecraft:paper",
+    "I": "minecraft:amethyst_shard"
   },
   "pattern": [
     "DCD",

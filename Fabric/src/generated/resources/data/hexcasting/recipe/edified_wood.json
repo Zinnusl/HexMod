@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "W": {
-      "item": "hexcasting:edified_log"
-    }
+    "W": "hexcasting:edified_log"
   },
   "pattern": [
     "WW",

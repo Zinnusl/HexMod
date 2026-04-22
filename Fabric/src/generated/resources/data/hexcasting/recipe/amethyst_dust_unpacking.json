@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    {
-      "item": "hexcasting:amethyst_dust_block"
-    }
+    "hexcasting:amethyst_dust_block"
   ],
   "result": {
     "id": "hexcasting:amethyst_dust",

@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "C": {
-      "tag": "hexcasting:edified_planks"
-    },
-    "D": {
-      "tag": "hexcasting:edified_planks"
-    }
+    "C": "#hexcasting:edified_planks",
+    "D": "#hexcasting:edified_planks"
   },
   "pattern": [
     "DCD",

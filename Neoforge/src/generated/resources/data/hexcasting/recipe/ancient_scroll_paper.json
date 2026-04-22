@@ -2,33 +2,15 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    {
-      "tag": "c:dyes/brown"
-    },
-    {
-      "item": "hexcasting:scroll_paper"
-    },
-    {
-      "item": "hexcasting:scroll_paper"
-    },
-    {
-      "item": "hexcasting:scroll_paper"
-    },
-    {
-      "item": "hexcasting:scroll_paper"
-    },
-    {
-      "item": "hexcasting:scroll_paper"
-    },
-    {
-      "item": "hexcasting:scroll_paper"
-    },
-    {
-      "item": "hexcasting:scroll_paper"
-    },
-    {
-      "item": "hexcasting:scroll_paper"
-    }
+    "#c:dyes/brown",
+    "hexcasting:scroll_paper",
+    "hexcasting:scroll_paper",
+    "hexcasting:scroll_paper",
+    "hexcasting:scroll_paper",
+    "hexcasting:scroll_paper",
+    "hexcasting:scroll_paper",
+    "hexcasting:scroll_paper",
+    "hexcasting:scroll_paper"
   ],
   "result": {
     "id": "hexcasting:ancient_scroll_paper",

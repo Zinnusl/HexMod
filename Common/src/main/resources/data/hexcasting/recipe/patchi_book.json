@@ -1,12 +1,8 @@
 {
   "type": "patchouli:shapeless_book_recipe",
   "ingredients": [
-    {
-      "item": "minecraft:book"
-    },
-    {
-      "item": "hexcasting:amethyst_dust"
-    }
+    "minecraft:book",
+    "hexcasting:amethyst_dust"
   ],
   "book": "hexcasting:thehexbook"
 }

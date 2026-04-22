@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "minecraft:torch"
-    },
-    "T": {
-      "item": "hexcasting:ancient_scroll_paper"
-    }
+    "B": "minecraft:torch",
+    "T": "hexcasting:ancient_scroll_paper"
   },
   "pattern": [
     "T",

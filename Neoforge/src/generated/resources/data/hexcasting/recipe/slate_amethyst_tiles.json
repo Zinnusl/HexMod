@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    {
-      "item": "hexcasting:slate_tiles"
-    },
-    {
-      "item": "hexcasting:amethyst_tiles"
-    }
+    "hexcasting:slate_tiles",
+    "hexcasting:amethyst_tiles"
   ],
   "result": {
     "id": "hexcasting:slate_amethyst_tiles",

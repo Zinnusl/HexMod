@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "tag": "c:ingots/copper"
-    },
-    "T": {
-      "item": "hexcasting:charged_amethyst"
-    }
+    "B": "#c:ingots/copper",
+    "T": "hexcasting:charged_amethyst"
   },
   "pattern": [
     "T",

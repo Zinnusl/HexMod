@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "A": {
-      "item": "hexcasting:charged_amethyst"
-    },
-    "S": {
-      "item": "minecraft:stick"
-    },
-    "W": {
-      "item": "minecraft:cherry_planks"
-    }
+    "A": "hexcasting:charged_amethyst",
+    "S": "minecraft:stick",
+    "W": "minecraft:cherry_planks"
   },
   "pattern": [
     " SA",

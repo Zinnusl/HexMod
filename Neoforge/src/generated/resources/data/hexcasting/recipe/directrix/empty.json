@@ -2,18 +2,10 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "A": {
-      "item": "hexcasting:charged_amethyst"
-    },
-    "C": {
-      "item": "minecraft:comparator"
-    },
-    "O": {
-      "item": "minecraft:observer"
-    },
-    "S": {
-      "item": "hexcasting:slate_block"
-    }
+    "A": "hexcasting:charged_amethyst",
+    "C": "minecraft:comparator",
+    "O": "minecraft:observer",
+    "S": "hexcasting:slate_block"
   },
   "pattern": [
     "CSS",

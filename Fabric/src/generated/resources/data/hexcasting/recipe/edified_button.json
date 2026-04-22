@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    {
-      "tag": "hexcasting:edified_planks"
-    }
+    "#hexcasting:edified_planks"
   ],
   "result": {
     "id": "hexcasting:edified_button"

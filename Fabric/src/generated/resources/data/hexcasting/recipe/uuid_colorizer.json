@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "hexcasting:amethyst_dust"
-    },
-    "D": {
-      "item": "hexcasting:amethyst_dust"
-    },
-    "I": {
-      "item": "minecraft:amethyst_shard"
-    }
+    "C": "hexcasting:amethyst_dust",
+    "D": "hexcasting:amethyst_dust",
+    "I": "minecraft:amethyst_shard"
   },
   "pattern": [
     "DCD",

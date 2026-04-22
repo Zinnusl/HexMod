@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "C": {
-      "tag": "c:ingots/iron"
-    },
-    "I": {
-      "item": "minecraft:amethyst_shard"
-    }
+    "C": "#c:ingots/iron",
+    "I": "minecraft:amethyst_shard"
   },
   "pattern": [
     " C ",

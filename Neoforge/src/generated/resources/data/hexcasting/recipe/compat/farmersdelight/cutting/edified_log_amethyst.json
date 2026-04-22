@@ -1,34 +1,21 @@
 {
-  "type": "c:conditional",
-  "recipes": [
+  "type": "farmersdelight:cutting",
+  "ingredients": [
+    "hexcasting:edified_log_amethyst"
+  ],
+  "result": [
+    "hexcasting:stripped_edified_log",
+    "farmersdelight:tree_bark"
+  ],
+  "sound": "minecraft:item.axe.strip",
+  "tool": {
+    "type": "farmersdelight:tool_action",
+    "action": "axe_strip"
+  },
+  "neoforge:conditions": [
     {
-      "conditions": [
-        {
-          "type": "c:mod_loaded",
-          "modid": "farmersdelight"
-        }
-      ],
-      "recipe": {
-        "type": "farmersdelight:cutting",
-        "ingredients": [
-          {
-            "item": "hexcasting:edified_log_amethyst"
-          }
-        ],
-        "result": [
-          {
-            "item": "hexcasting:stripped_edified_log"
-          },
-          {
-            "item": "farmersdelight:tree_bark"
-          }
-        ],
-        "sound": "minecraft:item.axe.strip",
-        "tool": {
-          "type": "farmersdelight:tool_action",
-          "action": "axe_strip"
-        }
-      }
+      "type": "neoforge:mod_loaded",
+      "modid": "farmersdelight"
     }
   ]
 }

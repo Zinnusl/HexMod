@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "hexcasting:quenched_allay_shard"
-    },
-    {
-      "item": "hexcasting:amethyst_dust"
-    }
+    "hexcasting:quenched_allay_shard",
+    "hexcasting:amethyst_dust"
   ],
   "result": {
     "id": "hexcasting:amethyst_dust",

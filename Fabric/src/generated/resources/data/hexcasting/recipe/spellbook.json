@@ -2,22 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "A": {
-      "item": "hexcasting:charged_amethyst"
-    },
-    "B": {
-      "item": "minecraft:writable_book"
-    },
-    "F": {
-      "item": "minecraft:chorus_fruit"
-    },
+    "A": "hexcasting:charged_amethyst",
+    "B": "minecraft:writable_book",
+    "F": "minecraft:chorus_fruit",
     "N": [
-      {
-        "item": "minecraft:gold_nugget"
-      },
-      {
-        "tag": "c:gold_nuggets"
-      }
+      "minecraft:gold_nugget",
+      "#c:gold_nuggets"
     ]
   },
   "pattern": [

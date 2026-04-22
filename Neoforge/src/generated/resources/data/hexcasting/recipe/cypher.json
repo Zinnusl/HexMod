@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "C": {
-      "tag": "c:ingots/copper"
-    },
-    "I": {
-      "item": "hexcasting:amethyst_dust"
-    }
+    "C": "#c:ingots/copper",
+    "I": "hexcasting:amethyst_dust"
   },
   "pattern": [
     " C ",

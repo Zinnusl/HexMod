@@ -4,17 +4,11 @@
   "key": {
     "C": {
       "type": "hexcasting:mod_conditional",
-      "default": {
-        "item": "minecraft:carrot"
-      },
-      "if_loaded": {
-        "item": "farmersdelight:skillet"
-      },
+      "default": "minecraft:carrot",
+      "if_loaded": "farmersdelight:skillet",
       "modid": "farmersdelight"
     },
-    "D": {
-      "item": "hexcasting:amethyst_dust"
-    }
+    "D": "hexcasting:amethyst_dust"
   },
   "pattern": [
     " D ",

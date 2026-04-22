@@ -9,17 +9,11 @@
   ],
   "type": "farmersdelight:cutting",
   "ingredients": [
-    {
-      "item": "hexcasting:edified_log_amethyst"
-    }
+    "hexcasting:edified_log_amethyst"
   ],
   "result": [
-    {
-      "item": "hexcasting:stripped_edified_log"
-    },
-    {
-      "item": "farmersdelight:tree_bark"
-    }
+    "hexcasting:stripped_edified_log",
+    "farmersdelight:tree_bark"
   ],
   "sound": "minecraft:item.axe.strip",
   "tool": {

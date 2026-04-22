@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "X": {
-      "item": "hexcasting:amethyst_dust"
-    }
+    "X": "hexcasting:amethyst_dust"
   },
   "pattern": [
     "XX",

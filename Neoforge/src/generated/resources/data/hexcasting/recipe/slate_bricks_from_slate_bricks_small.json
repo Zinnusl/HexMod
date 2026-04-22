@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    {
-      "item": "hexcasting:slate_bricks_small"
-    }
+    "hexcasting:slate_bricks_small"
   ],
   "result": {
     "id": "hexcasting:slate_bricks"

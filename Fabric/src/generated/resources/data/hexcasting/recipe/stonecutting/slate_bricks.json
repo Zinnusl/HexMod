@@ -1,8 +1,6 @@
 {
   "type": "minecraft:stonecutting",
   "count": 1,
-  "ingredient": {
-    "tag": "hexcasting:slate_blocks"
-  },
+  "ingredient": "#hexcasting:slate_blocks",
   "result": "hexcasting:slate_bricks"
 }

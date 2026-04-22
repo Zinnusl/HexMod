@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    {
-      "item": "hexcasting:amethyst_bricks"
-    }
+    "hexcasting:amethyst_bricks"
   ],
   "result": {
     "id": "hexcasting:amethyst_bricks_small"
