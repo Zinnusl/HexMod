@@ -26,10 +26,6 @@
       "required": false
     },
     {
-      "id": "#forge:bosses",
-      "required": false
-    },
-    {
       "id": "#c:bosses",
       "required": false
     },

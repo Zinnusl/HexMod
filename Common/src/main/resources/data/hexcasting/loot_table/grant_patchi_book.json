@@ -9,8 +9,12 @@
           "name": "patchouli:guide_book",
           "functions": [
             {
-              "function": "set_nbt",
-              "tag": "{\"patchouli:book\": \"hexcasting:thehexbook\"}"
+              "function": "set_components",
+              "components": {
+                "minecraft:custom_data": {
+                  "patchouli:book": "hexcasting:thehexbook"
+                }
+              }
             }
           ]
         }
