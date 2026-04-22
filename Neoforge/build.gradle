@@ -149,7 +149,12 @@ sourceSets {
     main.java.exclude 'at/petrak/hexcasting/forge/interop/jei/**'
     main.java.exclude 'at/petrak/hexcasting/forge/interop/curios/**'
     main.java.exclude 'at/petrak/hexcasting/forge/cap/**'
-    main.java.exclude 'at/petrak/hexcasting/forge/xplat/**'
+    // forge/xplat: ForgeXplatImpl rewritten as a minimal stub that provides a working
+    // IXplatAbstractions binding. Capability-backed features (brainsweep, pigment,
+    // flight, sentinel, altiora, addl-data) are all no-ops until caps are ported.
+    // ForgeClientXplatImpl still excluded.
+    // main.java.exclude 'at/petrak/hexcasting/forge/xplat/**'
+    main.java.exclude 'at/petrak/hexcasting/forge/xplat/ForgeClientXplatImpl.java'
     main.java.exclude 'at/petrak/hexcasting/forge/network/**'
     // forge/recipe ported on the 1.21 Ingredient codec surface.
     // main.java.exclude 'at/petrak/hexcasting/forge/recipe/**'
