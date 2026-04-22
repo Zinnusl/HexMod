@@ -146,9 +146,16 @@ sourceSets {
     // global loot modifiers, and the Forge-specific lib plumbing are all excluded
     // until the core Neoforge infrastructure is rebuilt.
     main.java.exclude 'at/petrak/hexcasting/forge/datagen/**'
-    main.java.exclude 'at/petrak/hexcasting/forge/interop/jei/**'
-    main.java.exclude 'at/petrak/hexcasting/forge/interop/curios/**'
-    main.java.exclude 'at/petrak/hexcasting/forge/cap/**'
+    // forge/interop/jei deleted — hex is migrating to EMI (already wired as a compileOnly
+    // dep). A 1.21 EMI plugin needs to be written at src/main/java/at/petrak/hexcasting/
+    // forge/interop/emi/ (mirroring the Fabric-side plugin).
+    // forge/interop/curios deleted — superseded by Accessories (wispforest). A 1.21
+    // Accessories plugin is the replacement for the old CuriosApiInterop surface.
+    // forge/cap deleted — the whole 1.20.1 Capability.Provider / @CapabilityInject /
+    // LazyOptional surface was replaced by BlockCapability / ItemCapability /
+    // EntityCapability + AttachmentType in 1.20.5+. Reimplementation must rebuild
+    // brainsweep / pigment / altiora / sentinel / flight / addl-data lookups on
+    // NeoForge 1.21's attached-data API before any of those features work.
     // forge/xplat: ForgeXplatImpl rewritten as a minimal stub that provides a working
     // IXplatAbstractions binding. Capability-backed features (brainsweep, pigment,
     // flight, sentinel, altiora, addl-data) are all no-ops until caps are ported.
