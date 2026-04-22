@@ -154,7 +154,9 @@ sourceSets {
     // flight, sentinel, altiora, addl-data) are all no-ops until caps are ported.
     // ForgeClientXplatImpl still excluded.
     // main.java.exclude 'at/petrak/hexcasting/forge/xplat/**'
-    main.java.exclude 'at/petrak/hexcasting/forge/xplat/ForgeClientXplatImpl.java'
+    // ForgeClientXplatImpl: re-enabled. Cap-dependent ClientCastingStack lookup returns
+    // an empty stack; texture filter-save/restore is a one-way set now.
+    // main.java.exclude 'at/petrak/hexcasting/forge/xplat/ForgeClientXplatImpl.java'
     main.java.exclude 'at/petrak/hexcasting/forge/network/**'
     // forge/recipe ported on the 1.21 Ingredient codec surface.
     // main.java.exclude 'at/petrak/hexcasting/forge/recipe/**'

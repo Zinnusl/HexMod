@@ -2,8 +2,6 @@ package at.petrak.hexcasting.forge.xplat;
 
 import at.petrak.hexcasting.api.client.ClientCastingStack;
 import at.petrak.hexcasting.common.msgs.IMessage;
-import at.petrak.hexcasting.forge.cap.HexCapabilities;
-import at.petrak.hexcasting.forge.network.ForgePacketHandler;
 import at.petrak.hexcasting.xplat.IClientXplatAbstractions;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -19,21 +17,26 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 
+/**
+ * TODO(port-1.21): client-side platform bridge. Depends on the excluded cap/ package
+ * (for ClientCastingStack lookup) and the stubbed ForgePacketHandler. Both return
+ * pass-through defaults; real behaviour lands with the cap rewrite + CustomPacketPayload
+ * migration.
+ */
 public class ForgeClientXplatImpl implements IClientXplatAbstractions {
     @Override
     public void sendPacketToServer(IMessage packet) {
-        ForgePacketHandler.getNetwork().sendToServer(packet);
+        // TODO(port-1.21): route via PacketDistributor once IMessage is a CustomPacketPayload.
     }
 
     @Override
     public void setRenderLayer(Block block, RenderType type) {
-        // For forge, handled in block models
-//        ItemBlockRenderTypes.setRenderLayer(block, type);
+        // 1.21 NeoForge: block render layers are resolved via the block's RenderType
+        // registered in ItemBlockRenderTypes; the explicit imperative call has no effect.
     }
 
     @Override
     public void initPlatformSpecific() {
-        // NO-OP
     }
 
     @Override
@@ -44,29 +47,37 @@ public class ForgeClientXplatImpl implements IClientXplatAbstractions {
 
     @Override
     public void registerItemProperty(Item item, ResourceLocation id, ItemPropertyFunction func) {
-        ItemProperties.register(item, id, func);
+        // 1.21: ItemProperties.register only accepts ClampedItemPropertyFunction. Wrap
+        // the unclamped input; the clamping is trivially an identity if the source is
+        // already well-behaved.
+        ItemProperties.register(item, id, (stack, level, holder, holderID) ->
+            func.call(stack, level, holder, holderID));
     }
 
     @Override
     public ClientCastingStack getClientCastingStack(Player player) {
-        var maybeCap = player.getCapability(HexCapabilities.CLIENT_CASTING_STACK).resolve();
-        if (maybeCap.isEmpty())
-            return new ClientCastingStack(); // lie
-        return maybeCap.get().get();
+        // TODO(port-1.21): backed by an attached data type (AttachmentType) on the player
+        // once hex's cap data is ported to 1.21. Return a fresh empty stack so UI code
+        // has something to render.
+        return new ClientCastingStack();
     }
 
     @Override
     public void setFilterSave(AbstractTexture texture, boolean filter, boolean mipmap) {
-        texture.setBlurMipmap(filter, mipmap);
+        // 1.21: AbstractTexture#setBlurMipmap → setFilter(blur, mipmap). There is no
+        // "restore" — the previous state isn't stashed for us anymore, so call sites that
+        // pair setFilterSave with restoreLastFilter lose the round-trip.
+        texture.setFilter(filter, mipmap);
     }
 
     @Override
     public void restoreLastFilter(AbstractTexture texture) {
-        texture.restoreLastBlurMipmap();
+        // No-op: the saved-state API was removed on 1.21. Callers that depended on
+        // filter state being restored must set it explicitly themselves.
     }
 
     @Override
     public boolean fabricAdditionalQuenchFrustumCheck(AABB aabb) {
-        return true; // forge fixes this with a patch so we just say "yep"
+        return true; // NeoForge fixes the offscreen-rendering case with a patch.
     }
 }
