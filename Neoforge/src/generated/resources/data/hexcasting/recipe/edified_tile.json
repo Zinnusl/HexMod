@@ -12,8 +12,8 @@
     " WW"
   ],
   "result": {
-    "count": 6,
-    "item": "hexcasting:edified_tile"
+    "id": "hexcasting:edified_tile",
+    "count": 6
   },
   "show_notification": true
 }

@@ -11,8 +11,8 @@
     "WWW"
   ],
   "result": {
-    "count": 2,
-    "item": "hexcasting:edified_trapdoor"
+    "id": "hexcasting:edified_trapdoor",
+    "count": 2
   },
   "show_notification": true
 }

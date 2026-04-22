@@ -19,8 +19,8 @@
     "B"
   ],
   "result": {
-    "count": 4,
-    "item": "hexcasting:amethyst_sconce"
+    "id": "hexcasting:amethyst_sconce",
+    "count": 4
   },
   "show_notification": true
 }

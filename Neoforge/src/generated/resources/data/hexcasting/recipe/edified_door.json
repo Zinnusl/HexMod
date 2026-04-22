@@ -12,8 +12,8 @@
     "WW"
   ],
   "result": {
-    "count": 3,
-    "item": "hexcasting:edified_door"
+    "id": "hexcasting:edified_door",
+    "count": 3
   },
   "show_notification": true
 }

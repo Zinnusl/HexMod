@@ -14,8 +14,8 @@
     "WSW"
   ],
   "result": {
-    "count": 3,
-    "item": "hexcasting:edified_fence"
+    "id": "hexcasting:edified_fence",
+    "count": 3
   },
   "show_notification": true
 }

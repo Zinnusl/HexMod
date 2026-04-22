@@ -3,7 +3,7 @@
   "category": "building",
   "ingredients": [
     {
-      "tag": "forge:dyes/brown"
+      "tag": "c:dyes/brown"
     },
     {
       "item": "hexcasting:scroll_paper"
@@ -31,7 +31,7 @@
     }
   ],
   "result": {
-    "count": 8,
-    "item": "hexcasting:ancient_scroll_paper"
+    "id": "hexcasting:ancient_scroll_paper",
+    "count": 8
   }
 }

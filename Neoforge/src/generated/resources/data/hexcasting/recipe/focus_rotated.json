@@ -6,10 +6,10 @@
       "item": "hexcasting:charged_amethyst"
     },
     "G": {
-      "tag": "forge:dusts/glowstone"
+      "tag": "c:dusts/glowstone"
     },
     "L": {
-      "tag": "forge:leather"
+      "tag": "c:leather"
     },
     "P": {
       "item": "minecraft:paper"
@@ -21,7 +21,7 @@
     "GPG"
   ],
   "result": {
-    "item": "hexcasting:focus"
+    "id": "hexcasting:focus"
   },
   "show_notification": true
 }

@@ -20,7 +20,7 @@
     " C "
   ],
   "result": {
-    "item": "hexcasting:trinket"
+    "id": "hexcasting:trinket"
   },
   "show_notification": true
 }

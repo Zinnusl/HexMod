@@ -10,7 +10,7 @@
     }
   ],
   "result": {
-    "count": 4,
-    "item": "hexcasting:charged_amethyst"
+    "id": "hexcasting:charged_amethyst",
+    "count": 4
   }
 }

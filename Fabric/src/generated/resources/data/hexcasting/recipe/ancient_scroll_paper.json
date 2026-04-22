@@ -39,7 +39,7 @@
     }
   ],
   "result": {
-    "count": 8,
-    "item": "hexcasting:ancient_scroll_paper"
+    "id": "hexcasting:ancient_scroll_paper",
+    "count": 8
   }
 }

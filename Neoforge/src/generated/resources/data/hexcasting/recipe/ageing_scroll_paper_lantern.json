@@ -3,7 +3,7 @@
   "category": "misc",
   "ingredients": [
     {
-      "tag": "forge:dyes/brown"
+      "tag": "c:dyes/brown"
     },
     {
       "item": "hexcasting:scroll_paper_lantern"
@@ -31,7 +31,7 @@
     }
   ],
   "result": {
-    "count": 8,
-    "item": "hexcasting:ancient_scroll_paper_lantern"
+    "id": "hexcasting:ancient_scroll_paper_lantern",
+    "count": 8
   }
 }

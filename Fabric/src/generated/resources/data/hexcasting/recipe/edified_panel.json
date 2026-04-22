@@ -15,8 +15,8 @@
     "DCD"
   ],
   "result": {
-    "count": 8,
-    "item": "hexcasting:edified_panel"
+    "id": "hexcasting:edified_panel",
+    "count": 8
   },
   "show_notification": true
 }

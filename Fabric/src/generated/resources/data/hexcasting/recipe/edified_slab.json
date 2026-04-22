@@ -10,8 +10,8 @@
     "WWW"
   ],
   "result": {
-    "count": 6,
-    "item": "hexcasting:edified_slab"
+    "id": "hexcasting:edified_slab",
+    "count": 6
   },
   "show_notification": true
 }

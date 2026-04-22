@@ -18,7 +18,7 @@
     "DCD"
   ],
   "result": {
-    "item": "hexcasting:uuid_colorizer"
+    "id": "hexcasting:uuid_colorizer"
   },
   "show_notification": true
 }

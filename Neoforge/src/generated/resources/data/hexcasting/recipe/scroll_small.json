@@ -14,7 +14,7 @@
     "P "
   ],
   "result": {
-    "item": "hexcasting:scroll_small"
+    "id": "hexcasting:scroll_small"
   },
   "show_notification": true
 }

@@ -3,7 +3,7 @@
   "category": "equipment",
   "key": {
     "C": {
-      "tag": "forge:ingots/copper"
+      "tag": "c:ingots/copper"
     },
     "I": {
       "item": "hexcasting:amethyst_dust"
@@ -15,7 +15,7 @@
     " C "
   ],
   "result": {
-    "item": "hexcasting:cypher"
+    "id": "hexcasting:cypher"
   },
   "show_notification": true
 }

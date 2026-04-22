@@ -10,7 +10,7 @@
     }
   ],
   "result": {
-    "count": 31,
-    "item": "hexcasting:amethyst_dust"
+    "id": "hexcasting:amethyst_dust",
+    "count": 31
   }
 }

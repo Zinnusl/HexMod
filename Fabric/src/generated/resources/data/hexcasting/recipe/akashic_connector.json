@@ -24,8 +24,8 @@
     "LPL"
   ],
   "result": {
-    "count": 4,
-    "item": "hexcasting:akashic_connector"
+    "id": "hexcasting:akashic_connector",
+    "count": 4
   },
   "show_notification": true
 }

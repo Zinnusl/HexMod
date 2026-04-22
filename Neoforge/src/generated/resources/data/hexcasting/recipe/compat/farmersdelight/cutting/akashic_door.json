@@ -1,10 +1,10 @@
 {
-  "type": "forge:conditional",
+  "type": "c:conditional",
   "recipes": [
     {
       "conditions": [
         {
-          "type": "forge:mod_loaded",
+          "type": "c:mod_loaded",
           "modid": "farmersdelight"
         }
       ],

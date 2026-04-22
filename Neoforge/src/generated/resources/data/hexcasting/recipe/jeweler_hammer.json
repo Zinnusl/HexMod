@@ -6,17 +6,17 @@
       "item": "minecraft:amethyst_shard"
     },
     "I": {
-      "tag": "forge:ingots/iron"
+      "tag": "c:ingots/iron"
     },
     "N": {
-      "tag": "forge:nuggets/iron"
+      "tag": "c:nuggets/iron"
     },
     "S": [
       {
         "item": "minecraft:stick"
       },
       {
-        "tag": "forge:rods/wooden"
+        "tag": "c:rods/wooden"
       }
     ]
   },
@@ -26,7 +26,7 @@
     " S "
   ],
   "result": {
-    "item": "hexcasting:jeweler_hammer"
+    "id": "hexcasting:jeweler_hammer"
   },
   "show_notification": true
 }

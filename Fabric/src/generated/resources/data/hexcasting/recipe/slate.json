@@ -14,8 +14,8 @@
     "SSS"
   ],
   "result": {
-    "count": 6,
-    "item": "hexcasting:slate"
+    "id": "hexcasting:slate",
+    "count": 6
   },
   "show_notification": true
 }

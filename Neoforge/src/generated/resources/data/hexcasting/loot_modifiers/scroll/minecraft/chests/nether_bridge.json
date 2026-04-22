@@ -2,7 +2,7 @@
   "type": "hexcasting:inject_scrolls",
   "conditions": [
     {
-      "condition": "forge:loot_table_id",
+      "condition": "c:loot_table_id",
       "loot_table_id": "minecraft:chests/nether_bridge"
     }
   ],

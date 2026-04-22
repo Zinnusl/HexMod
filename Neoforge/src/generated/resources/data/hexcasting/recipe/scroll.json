@@ -15,7 +15,7 @@
     "PPP"
   ],
   "result": {
-    "item": "hexcasting:scroll"
+    "id": "hexcasting:scroll"
   },
   "show_notification": true
 }

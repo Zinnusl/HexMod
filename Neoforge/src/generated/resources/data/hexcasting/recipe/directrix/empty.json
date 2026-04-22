@@ -21,7 +21,7 @@
     "SSC"
   ],
   "result": {
-    "item": "hexcasting:directrix/empty"
+    "id": "hexcasting:directrix/empty"
   },
   "show_notification": true
 }

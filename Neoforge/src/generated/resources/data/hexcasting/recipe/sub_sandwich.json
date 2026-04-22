@@ -21,7 +21,7 @@
     " B "
   ],
   "result": {
-    "item": "hexcasting:sub_sandwich"
+    "id": "hexcasting:sub_sandwich"
   },
   "show_notification": true
 }

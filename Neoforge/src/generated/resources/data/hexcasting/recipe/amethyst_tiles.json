@@ -11,8 +11,8 @@
     "##"
   ],
   "result": {
-    "count": 4,
-    "item": "hexcasting:amethyst_tiles"
+    "id": "hexcasting:amethyst_tiles",
+    "count": 4
   },
   "show_notification": true
 }

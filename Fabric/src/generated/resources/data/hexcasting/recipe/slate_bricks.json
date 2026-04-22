@@ -11,8 +11,8 @@
     "##"
   ],
   "result": {
-    "count": 4,
-    "item": "hexcasting:slate_bricks"
+    "id": "hexcasting:slate_bricks",
+    "count": 4
   },
   "show_notification": true
 }

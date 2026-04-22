@@ -15,7 +15,7 @@
     "PP "
   ],
   "result": {
-    "item": "hexcasting:scroll_medium"
+    "id": "hexcasting:scroll_medium"
   },
   "show_notification": true
 }

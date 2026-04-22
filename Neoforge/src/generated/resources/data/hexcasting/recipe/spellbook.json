@@ -12,7 +12,7 @@
       "item": "minecraft:chorus_fruit"
     },
     "N": {
-      "tag": "forge:nuggets/gold"
+      "tag": "c:nuggets/gold"
     }
   },
   "pattern": [
@@ -21,7 +21,7 @@
     "NBA"
   ],
   "result": {
-    "item": "hexcasting:spellbook"
+    "id": "hexcasting:spellbook"
   },
   "show_notification": true
 }

@@ -18,8 +18,8 @@
     "DCD"
   ],
   "result": {
-    "count": 8,
-    "item": "hexcasting:scroll_paper"
+    "id": "hexcasting:scroll_paper",
+    "count": 8
   },
   "show_notification": true
 }

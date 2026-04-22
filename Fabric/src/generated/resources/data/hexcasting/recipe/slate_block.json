@@ -18,8 +18,8 @@
     "DCD"
   ],
   "result": {
-    "count": 8,
-    "item": "hexcasting:slate_block"
+    "id": "hexcasting:slate_block",
+    "count": 8
   },
   "show_notification": true
 }

@@ -7,7 +7,7 @@
     }
   ],
   "result": {
-    "count": 4,
-    "item": "hexcasting:amethyst_dust"
+    "id": "hexcasting:amethyst_dust",
+    "count": 4
   }
 }

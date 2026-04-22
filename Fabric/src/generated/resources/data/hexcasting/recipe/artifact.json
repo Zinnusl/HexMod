@@ -23,7 +23,7 @@
     " D "
   ],
   "result": {
-    "item": "hexcasting:artifact"
+    "id": "hexcasting:artifact"
   },
   "show_notification": true
 }

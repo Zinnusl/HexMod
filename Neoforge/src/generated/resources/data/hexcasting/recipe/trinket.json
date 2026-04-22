@@ -3,7 +3,7 @@
   "category": "equipment",
   "key": {
     "C": {
-      "tag": "forge:ingots/iron"
+      "tag": "c:ingots/iron"
     },
     "I": {
       "item": "minecraft:amethyst_shard"
@@ -15,7 +15,7 @@
     " C "
   ],
   "result": {
-    "item": "hexcasting:trinket"
+    "id": "hexcasting:trinket"
   },
   "show_notification": true
 }
