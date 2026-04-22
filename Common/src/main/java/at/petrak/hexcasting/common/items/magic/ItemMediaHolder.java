@@ -92,7 +92,7 @@ public abstract class ItemMediaHolder extends Item implements MediaHolderItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents,
+    public void appendHoverText(ItemStack pStack, net.minecraft.world.item.Item.TooltipContext ctx, List<Component> pTooltipComponents,
         TooltipFlag pIsAdvanced) {
         var maxMedia = getMaxMedia(pStack);
         if (maxMedia > 0) {
@@ -114,6 +114,6 @@ public abstract class ItemMediaHolder extends Item implements MediaHolderItem {
                     mediamount, maxCapacity, percentFull));
         }
 
-        super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
+        super.appendHoverText(pStack, ctx, pTooltipComponents, pIsAdvanced);
     }
 }

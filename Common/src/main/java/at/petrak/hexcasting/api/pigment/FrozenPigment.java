@@ -3,6 +3,7 @@ package at.petrak.hexcasting.api.pigment;
 import at.petrak.hexcasting.common.lib.HexItems;
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 
@@ -12,8 +13,8 @@ import java.util.function.Supplier;
 /**
  * A snapshot of a pigment item and its owner.
  * <p>
- * Due to capabilities being really slow to query many times a tick on Forge, this returns a colorizer <i>supplier</i>.
- * Get it once, and then query it a lot.
+ * 1.21: ItemStack#save and #parseOptional both require a HolderLookup.Provider now, so
+ * callers must pass one. Level/ServerLevel can supply one via {@code registryAccess()}.
  */
 public record FrozenPigment(ItemStack item, UUID owner) {
 
@@ -26,20 +27,22 @@ public record FrozenPigment(ItemStack item, UUID owner) {
     public static final Supplier<FrozenPigment> ANCIENT =
         () -> new FrozenPigment(new ItemStack(HexItems.ANCIENT_PIGMENT), Util.NIL_UUID);
 
-    public CompoundTag serializeToNBT() {
+    public CompoundTag serializeToNBT(HolderLookup.Provider provider) {
         var out = new CompoundTag();
-        out.put(TAG_STACK, this.item.save(new CompoundTag()));
+        if (!this.item.isEmpty()) {
+            out.put(TAG_STACK, this.item.save(provider));
+        }
         out.putUUID(TAG_OWNER, this.owner);
         return out;
     }
 
-    public static FrozenPigment fromNBT(CompoundTag tag) {
+    public static FrozenPigment fromNBT(CompoundTag tag, HolderLookup.Provider provider) {
         if (tag.isEmpty()) {
             return FrozenPigment.DEFAULT.get();
         }
         try {
             CompoundTag stackTag = tag.getCompound(TAG_STACK);
-            var stack = ItemStack.of(stackTag);
+            var stack = ItemStack.parseOptional(provider, stackTag);
             var uuid = tag.getUUID(TAG_OWNER);
             return new FrozenPigment(stack, uuid);
         } catch (NullPointerException exn) {

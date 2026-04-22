@@ -191,8 +191,7 @@ public class ItemScroll extends Item implements IotaHolderItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents,
-        TooltipFlag pIsAdvanced) {
+    public void appendHoverText(ItemStack pStack, net.minecraft.world.item.Item.TooltipContext ctx, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
         if (NBTHelper.getBoolean(pStack, TAG_NEEDS_PURCHASE)) {
             var needsPurchase = Component.translatable("hexcasting.tooltip.scroll.needs_purchase");
             pTooltipComponents.add(needsPurchase.withStyle(ChatFormatting.GRAY));

@@ -11,6 +11,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -151,7 +152,7 @@ public class CircleExecutionState {
                 reachedPositions, start, impetus.getStartDirection(), new CastingImage(), casterUUID, colorizer));
     }
 
-    public CompoundTag save() {
+    public CompoundTag save(HolderLookup.Provider provider) {
         var out = new CompoundTag();
 
         out.put(TAG_IMPETUS_POS, NbtUtils.writeBlockPos(this.impetusPos));
@@ -177,7 +178,7 @@ public class CircleExecutionState {
             out.putUUID(TAG_CASTER, this.caster);
 
         if (this.casterPigment != null)
-            out.put(TAG_PIGMENT, this.casterPigment.serializeToNBT());
+            out.put(TAG_PIGMENT, this.casterPigment.serializeToNBT(provider));
 
         return out;
     }
@@ -210,7 +211,7 @@ public class CircleExecutionState {
 
         FrozenPigment pigment = null;
         if (nbt.contains(TAG_PIGMENT, Tag.TAG_COMPOUND))
-            pigment = FrozenPigment.fromNBT(nbt.getCompound(TAG_PIGMENT));
+            pigment = FrozenPigment.fromNBT(nbt.getCompound(TAG_PIGMENT), world.registryAccess());
 
         return new CircleExecutionState(startPos, startDir, knownPositions, reachedPositions, currentPos,
             enteredFrom, image, caster, pigment);

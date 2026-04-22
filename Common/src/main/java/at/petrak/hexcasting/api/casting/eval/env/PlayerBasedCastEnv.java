@@ -165,7 +165,8 @@ public abstract class PlayerBasedCastEnv extends CastingEnvironment {
             double healthToRemove = Math.max(costLeft / mediaToHealth, 0.5);
             if (simulate) {
                 long simulatedRemovedMedia = Mth.ceil(Math.min(this.caster.getHealth(), healthToRemove) * mediaToHealth);
-                if (((at.petrak.hexcasting.mixin.accessor.AccessorDamageSource)(Object)this.caster.isInvulnerableTo(this.caster.damageSources()).hex$source(HexDamageTypes.OVERCAST, null))) {
+                var dmgSrc = ((at.petrak.hexcasting.mixin.accessor.AccessorDamageSource)(Object)this.caster.damageSources()).hex$source(HexDamageTypes.OVERCAST, null);
+                if (dmgSrc != null && this.caster.isInvulnerableTo(dmgSrc)) {
                     simulatedRemovedMedia = 0;
                 }
                 costLeft -= simulatedRemovedMedia;
@@ -196,7 +197,9 @@ public abstract class PlayerBasedCastEnv extends CastingEnvironment {
     }
 
     protected boolean canOvercast() {
-        var adv = this.world.getServer().getAdvancements().getAdvancement(modLoc("y_u_no_cast_angy"));
+        // 1.21: ServerAdvancementManager#get returns AdvancementHolder.
+        var adv = this.world.getServer().getAdvancements().get(modLoc("y_u_no_cast_angy"));
+        if (adv == null) return false;
         var advs = this.caster.getAdvancements();
         return advs.getOrStartProgress(adv).isDone();
     }

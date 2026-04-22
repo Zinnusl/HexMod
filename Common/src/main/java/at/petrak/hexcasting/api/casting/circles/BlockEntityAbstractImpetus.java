@@ -286,7 +286,7 @@ public abstract class BlockEntityAbstractImpetus extends HexBlockEntity implemen
     @Override
     protected void saveModData(CompoundTag tag) {
         if (this.executionState != null) {
-            tag.put(TAG_EXECUTION_STATE, this.executionState.save());
+            tag.put(TAG_EXECUTION_STATE, this.executionState.save(this.level.registryAccess()));
         }
 
         tag.putLong(TAG_MEDIA, this.media);
@@ -298,7 +298,7 @@ public abstract class BlockEntityAbstractImpetus extends HexBlockEntity implemen
             tag.put(TAG_ERROR_DISPLAY, this.displayItem.save(this.level.registryAccess()));
         }
         if (this.pigment != null)
-            tag.put(TAG_PIGMENT, this.pigment.serializeToNBT());
+            tag.put(TAG_PIGMENT, this.pigment.serializeToNBT(this.level.registryAccess()));
     }
 
     @Override
@@ -324,7 +324,7 @@ public abstract class BlockEntityAbstractImpetus extends HexBlockEntity implemen
             this.displayItem = null;
         }
         if (tag.contains(TAG_PIGMENT, Tag.TAG_COMPOUND))
-            this.pigment = FrozenPigment.fromNBT(tag.getCompound(TAG_PIGMENT));
+            this.pigment = FrozenPigment.fromNBT(tag.getCompound(TAG_PIGMENT), this.level.registryAccess());
     }
 
     public void applyScryingLensOverlay(List<Pair<ItemStack, Component>> lines,

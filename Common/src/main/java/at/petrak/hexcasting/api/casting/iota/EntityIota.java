@@ -39,7 +39,7 @@ public class EntityIota extends Iota {
     Tag serialize() {
         var out = new CompoundTag();
         out.putUUID("uuid", this.getEntity().getUUID());
-        out.putString("name", Component.Serializer.toJson(getEntityNameWithInline(true)));
+        out.putString("name", Component.Serializer.toJson(getEntityNameWithInline(true), net.minecraft.core.RegistryAccess.EMPTY));
         return out;
     }
 
@@ -82,7 +82,9 @@ public class EntityIota extends Iota {
             }
             var nameJson = ctag.getString("name");
 //            return Component.literal(nameJson);
-            return Component.Serializer.fromJsonLenient(nameJson).withStyle(ChatFormatting.AQUA);
+            var parsed = Component.Serializer.fromJsonLenient(nameJson, net.minecraft.core.RegistryAccess.EMPTY);
+            if (parsed == null) parsed = Component.translatable("hexcasting.spelldata.entity.whoknows");
+            return parsed.copy().withStyle(ChatFormatting.AQUA);
         }
 
         @Override
