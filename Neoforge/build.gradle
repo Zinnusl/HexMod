@@ -168,7 +168,10 @@ sourceSets {
     // relied on the removed Recipe#getId/setRegistryName path). ForgeAccessorBuiltInRegistries
     // remains — its @Invoker targets still resolve.
     // main.java.exclude 'at/petrak/hexcasting/forge/mixin/**'
-    main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexInitializer.java'
+    // ForgeHexInitializer: skeleton @Mod class rewritten — registers DeferredRegisters,
+    // wires configs, runs the cross-platform init. Capability/packet/Curios event plumbing
+    // still TODO.
+    // main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexInitializer.java'
     main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexClientInitializer.java'
     // ForgeHexConfig ported — isValidResourceLocation → tryParse.
     // main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexConfig.java'
