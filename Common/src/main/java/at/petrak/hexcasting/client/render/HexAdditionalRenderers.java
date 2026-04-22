@@ -74,9 +74,11 @@ public class HexAdditionalRenderers {
         ps.scale(scale, scale, scale);
 
 
+        // 1.21: Tesselator#getBuilder / #end removed; begin returns a BufferBuilder and
+        // BufferUploader.drawWithShader flushes it.
         var tess = Tesselator.getInstance();
-        var buf = tess.getBuilder();
         var neo = ps.last().pose();
+        var buf = tess.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
         RenderSystem.enableBlend();
         RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
         RenderSystem.disableDepthTest();
@@ -91,18 +93,15 @@ public class HexAdditionalRenderers {
                 rcolor = colProvider.getColor(time, new Vec3(r[0], r[1], r[2]));
             var normal = new Vector3f(r[0] - l[0], r[1] - l[1], r[2] - l[2]);
             normal.normalize();
-            buf.vertex(neo, l[0], l[1], l[2])
-                .color(lcolor)
-                .normal(ps.last().normal(), normal.x(), normal.y(), normal.z())
-                .endVertex();
-            buf.vertex(neo, r[0], r[1], r[2])
-                .color(rcolor)
-                .normal(ps.last().normal(), -normal.x(), -normal.y(), -normal.z())
-                .endVertex();
+            buf.addVertex(neo, l[0], l[1], l[2])
+                .setColor(lcolor)
+                .setNormal(ps.last(), normal.x(), normal.y(), normal.z());
+            buf.addVertex(neo, r[0], r[1], r[2])
+                .setColor(rcolor)
+                .setNormal(ps.last(), -normal.x(), -normal.y(), -normal.z());
         };
 
-        // Icosahedron inscribed inside the unit sphere
-        buf.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+        // Icosahedron inscribed inside the unit sphere (buffer already begun above).
         for (int side = 0; side <= 1; side++) {
             var ring = (side == 0) ? Icos.BOTTOM_RING : Icos.TOP_RING;
             var apex = (side == 0) ? Icos.BOTTOM : Icos.TOP;
@@ -123,7 +122,10 @@ public class HexAdditionalRenderers {
             v.accept(Icos.TOP_RING[(i + 2) % 5], bottom);
             v.accept(bottom, Icos.TOP_RING[(i + 3) % 5]);
         }
-        tess.end();
+        var mesh = buf.build();
+        if (mesh != null) {
+            com.mojang.blaze3d.vertex.BufferUploader.drawWithShader(mesh);
+        }
 
         RenderSystem.enableDepthTest();
         RenderSystem.enableCull();

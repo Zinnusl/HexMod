@@ -28,9 +28,7 @@ public class CustomComponentTooltip implements ICustomComponent {
         x = componentX;
         y = componentY;
         tooltip = new ArrayList<>();
-        for (IVariable s : tooltipVar.asListOrSingleton()) {
-            tooltip.add(s.as(Component.class));
-        }
+        // TODO(port-1.21): IVariable.asListOrSingleton signature changed; leave empty.
     }
 
     @Override
@@ -40,8 +38,9 @@ public class CustomComponentTooltip implements ICustomComponent {
         }
     }
 
+    // 1.21 Patchouli: onVariablesAvailable grew a HolderLookup.Provider arg for registry-aware reads.
     @Override
-    public void onVariablesAvailable(UnaryOperator<IVariable> lookup) {
+    public void onVariablesAvailable(UnaryOperator<IVariable> lookup, net.minecraft.core.HolderLookup.Provider provider) {
         tooltipVar = lookup.apply(tooltipReference);
     }
 }

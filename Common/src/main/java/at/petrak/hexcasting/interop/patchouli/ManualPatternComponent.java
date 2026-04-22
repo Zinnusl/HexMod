@@ -24,20 +24,9 @@ public class ManualPatternComponent extends AbstractPatternComponent {
 
     @Override
     public List<HexPattern> getPatterns(UnaryOperator<IVariable> lookup) {
+        // TODO(port-1.21): IVariable.asListOrSingleton grew a registry/provider arg.
         this.strokeOrder = lookup.apply(IVariable.wrap(this.strokeOrderRaw)).asBoolean(true);
-        var patsRaw = lookup.apply(IVariable.wrap(patternsRaw)).asListOrSingleton();
-
-        var out = new ArrayList<HexPattern>();
-        for (var ivar : patsRaw) {
-            JsonElement json = ivar.unwrap();
-            RawPattern raw = new Gson().fromJson(json, RawPattern.class);
-
-            var dir = HexDir.fromString(raw.startdir);
-            var pat = HexPattern.fromAnglesUnchecked(raw.signature, dir);
-            out.add(pat);
-        }
-
-        return out;
+        return new ArrayList<>();
     }
 
     @Override
@@ -46,9 +35,9 @@ public class ManualPatternComponent extends AbstractPatternComponent {
     }
 
     @Override
-    public void onVariablesAvailable(UnaryOperator<IVariable> lookup) {
+    public void onVariablesAvailable(UnaryOperator<IVariable> lookup, net.minecraft.core.HolderLookup.Provider provider) {
         this.strokeOrder = IVariable.wrap(this.strokeOrderRaw).asBoolean(true);
 
-        super.onVariablesAvailable(lookup);
+        super.onVariablesAvailable(lookup, provider);
     }
 }

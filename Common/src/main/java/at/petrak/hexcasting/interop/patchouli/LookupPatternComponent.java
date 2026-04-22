@@ -37,10 +37,10 @@ public class LookupPatternComponent extends AbstractPatternComponent {
     }
 
     @Override
-    public void onVariablesAvailable(UnaryOperator<IVariable> lookup) {
+    public void onVariablesAvailable(UnaryOperator<IVariable> lookup, net.minecraft.core.HolderLookup.Provider provider) {
         var opName = lookup.apply(IVariable.wrap(this.opNameRaw)).asString();
         this.opName = ResourceLocation.tryParse(opName);
 
-        super.onVariablesAvailable(lookup);
+        super.onVariablesAvailable(lookup, provider);
     }
 }

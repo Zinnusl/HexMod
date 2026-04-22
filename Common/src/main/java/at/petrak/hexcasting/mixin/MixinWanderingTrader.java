@@ -1,6 +1,7 @@
 package at.petrak.hexcasting.mixin;
 
 import net.minecraft.world.entity.npc.WanderingTrader;
+import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +32,8 @@ public class MixinWanderingTrader {
             ItemStack scroll = new ItemStack(HexItems.SCROLL_LARGE);
             AddPerWorldPatternToScrollFunc.doStatic(scroll, rand, self.getServer().overworld());
             NBTHelper.putBoolean(scroll, ItemScroll.TAG_NEEDS_PURCHASE, true);
-            offerList.set(5, new MerchantOffer(new ItemStack(Items.EMERALD, 12), scroll, 1, 1, 1));
+            // 1.21: MerchantOffer takes an ItemCost for the primary cost.
+            offerList.set(5, new MerchantOffer(new ItemCost(Items.EMERALD, 12), scroll, 1, 1, 1));
         }
     }
 }

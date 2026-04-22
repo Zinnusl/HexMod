@@ -18,25 +18,12 @@ public final class HexRenderTypes extends RenderType {
         throw new UnsupportedOperationException("Should not be instantiated");
     }
 
-    // 1.21: RenderType.create is protected static; subclasses call it directly.
-    // The CompositeRenderType return type is private, so we widen to RenderType.
-    private static RenderType makeLayer(String name, VertexFormat format, VertexFormat.Mode mode,
-        int bufSize, boolean hasCrumbling, boolean sortOnUpload, RenderType.CompositeState glState) {
-        return RenderType.create(name, format, mode, bufSize, hasCrumbling, sortOnUpload, glState);
-    }
-
+    // TODO(port-1.21): RenderType.create now returns CompositeRenderType which is private
+    // in 1.21, so this callsite is no longer reachable from outside the nest. The
+    // grayscale effect that this render type backed is disabled until we wire it via a
+    // NeoForge client bus event (RegisterNamedRenderTypesEvent) or a mixin.
     private static final Function<ResourceLocation, RenderType> GRAYSCALE_PROVIDER = Util.memoize(texture -> {
-        CompositeState glState = RenderType.CompositeState.builder()
-            .setShaderState(new ShaderStateShard(HexShaders::grayscale))
-            .setTextureState(new TextureStateShard(texture, false, false))
-            .setTransparencyState(NO_TRANSPARENCY)
-            .setCullState(NO_CULL)
-            .setLightmapState(LIGHTMAP)
-            .setOverlayState(OVERLAY)
-            .createCompositeState(true);
-
-        return makeLayer(HexAPI.MOD_ID + ":grayscale", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256,
-            true, false, glState);
+        return RenderType.entityTranslucentCull(texture);
     });
 
     public static RenderType getGrayscaleLayer(ResourceLocation texture) {

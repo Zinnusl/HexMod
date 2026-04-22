@@ -60,9 +60,9 @@ public class ScrungledPatternsSave extends SavedData {
         return Pair.of(sig, this.lookup.get(sig));
     }
 
+    // 1.21: SavedData.save takes (CompoundTag, HolderLookup.Provider).
     @Override
-    public CompoundTag save(CompoundTag tag) {
-        // We don't save the reverse lookup cause we can reconstruct it when loading.
+    public CompoundTag save(CompoundTag tag, net.minecraft.core.HolderLookup.Provider provider) {
         this.lookup.forEach((sig, entry) -> {
             var inner = new CompoundTag();
             inner.putByte(TAG_DIR, (byte) entry.canonicalStartDir.ordinal());
@@ -72,7 +72,7 @@ public class ScrungledPatternsSave extends SavedData {
         return tag;
     }
 
-    private static ScrungledPatternsSave load(CompoundTag tag) {
+    private static ScrungledPatternsSave load(CompoundTag tag, net.minecraft.core.HolderLookup.Provider provider) {
         var registryKey = IXplatAbstractions.INSTANCE.getActionRegistry().key();
 
         var map = new HashMap<String, PerWorldEntry>();
@@ -115,10 +115,13 @@ public class ScrungledPatternsSave extends SavedData {
     }
 
     public static ScrungledPatternsSave open(ServerLevel overworld) {
-        return overworld.getDataStorage().computeIfAbsent(
-            ScrungledPatternsSave::load,
+        // 1.21: DimensionDataStorage.computeIfAbsent uses SavedData.Factory<T>.
+        SavedData.Factory<ScrungledPatternsSave> factory = new SavedData.Factory<>(
             () -> ScrungledPatternsSave.createFromScratch(overworld.getSeed()),
-            TAG_SAVED_DATA);
+            ScrungledPatternsSave::load,
+            null
+        );
+        return overworld.getDataStorage().computeIfAbsent(factory, TAG_SAVED_DATA);
     }
 
     public record PerWorldEntry(ResourceKey<ActionRegistryEntry> key, HexDir canonicalStartDir) {

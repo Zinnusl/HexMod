@@ -99,10 +99,10 @@ public class HexAPIImpl implements HexAPI {
     // 1.21: ArmorMaterial is a final record; can't be subclassed. The "robes" material
     // is a zero-defense placeholder — hex renders its own armour overlay separately.
     ArmorMaterial ARMOR_MATERIAL = new ArmorMaterial(
-        java.util.Map.<net.minecraft.world.item.ArmorItem.Type, Integer>of(),
+        new java.util.EnumMap<>(net.minecraft.world.item.ArmorItem.Type.class),
         0,
-        net.minecraft.core.Holder.direct(SoundEvents.ARMOR_EQUIP_LEATHER),
-        () -> Ingredient.of(),
+        SoundEvents.ARMOR_EQUIP_LEATHER,
+        (java.util.function.Supplier<Ingredient>) Ingredient::of,
         java.util.List.<net.minecraft.world.item.ArmorMaterial.Layer>of(),
         0f,
         0f
