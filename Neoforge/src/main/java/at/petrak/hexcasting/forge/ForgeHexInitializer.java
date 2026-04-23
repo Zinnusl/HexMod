@@ -213,5 +213,18 @@ public class ForgeHexInitializer {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
             (net.neoforged.neoforge.event.RegisterCommandsEvent evt) ->
                 at.petrak.hexcasting.common.lib.HexCommands.register(evt.getDispatcher()));
+
+        // Jeweler hammer gating: prevent breaking unripe amethyst clusters etc. — Fabric
+        // uses AttackBlockCallback; on NeoForge the equivalent is PlayerInteractEvent.LeftClickBlock
+        // with setCanceled(true) + UseBlock.DENY.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
+            (net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickBlock evt) -> {
+                var state = evt.getLevel().getBlockState(evt.getPos());
+                if (at.petrak.hexcasting.common.items.ItemJewelerHammer.shouldFailToBreak(
+                    evt.getEntity(), state, evt.getPos())) {
+                    evt.setCanceled(true);
+                    evt.setUseBlock(net.neoforged.neoforge.common.util.TriState.FALSE);
+                }
+            });
     }
 }
