@@ -3,7 +3,7 @@
   "chance": 0.4,
   "conditions": [
     {
-      "condition": "c:loot_table_id",
+      "condition": "neoforge:loot_table_id",
       "loot_table_id": "minecraft:chests/nether_bridge"
     }
   ]
