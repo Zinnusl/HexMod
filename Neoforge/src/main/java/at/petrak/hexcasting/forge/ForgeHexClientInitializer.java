@@ -39,21 +39,13 @@ import java.io.IOException;
 import java.util.function.Function;
 
 /**
- * TODO(port-1.21): client-side initializer skeleton. Wires particles, shaders, block
- * entity renderers, model layers, and the spellcasting GUI scroll listener using the
- * NeoForge 1.21 client events.
- * <p>
- * Deferred:
- * <ul>
- *   <li>GLOBAL_ITEM_COLORS / GLOBAL_BLOCK_COLORS — the old self-mixin path is dead;
- *       on 1.21 hook {@code RegisterColorHandlersEvent.Item/Block} and register directly.</li>
- *   <li>{@code EntityRenderersEvent.AddLayers} — the skin/layer API shifted and hex's
- *       AltioraLayer needs a bespoke pass.</li>
- *   <li>Model-bake / model-register events — needed for the dynamic pattern textures.</li>
- *   <li>{@code ClientPlayerNetworkEvent.LoggingIn} callback still connects, but the
- *       {@code PatternRegistryManifest.processRegistry(null)} call needs a ServerLevel
- *       now; leave it running server-side for now.</li>
- * </ul>
+ * Client-side initializer for the NeoForge 1.21 side. Subscribes particles, shaders,
+ * block entity renderers, model layers, GUI overlay passes, the spellcasting scroll
+ * listener, and the tick counter. Colour-provider registration is a no-op on this
+ * platform because hex doesn't currently register any block/item colour handlers
+ * cross-platform; if one is added later, wire it through
+ * {@code RegisterColorHandlersEvent.Item/Block} on the mod bus. AltioraLayer skin
+ * injection and dynamic-pattern model bakery are still deferred.
  */
 @EventBusSubscriber(modid = HexAPI.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class ForgeHexClientInitializer {
@@ -98,11 +90,7 @@ public class ForgeHexClientInitializer {
     }
 
     public static void clientInit(FMLClientSetupEvent evt) {
-        evt.enqueueWork(() -> {
-            RegisterClientStuff.init();
-            // TODO(port-1.21): restore color-provider registration via
-            // RegisterColorHandlersEvent.Item + .Block on the mod bus.
-        });
+        evt.enqueueWork(RegisterClientStuff::init);
     }
 
     @SubscribeEvent

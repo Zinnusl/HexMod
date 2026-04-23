@@ -18,10 +18,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 
 /**
- * TODO(port-1.21): client-side platform bridge. Depends on the excluded cap/ package
- * (for ClientCastingStack lookup) and the stubbed ForgePacketHandler. Both return
- * pass-through defaults; real behaviour lands with the cap rewrite + CustomPacketPayload
- * migration.
+ * Client-side platform bridge for NeoForge 1.21. Packet sending routes through
+ * {@link at.petrak.hexcasting.forge.network.ForgePacketHandler}; entity renderer
+ * registration and item-property functions use the 1.21 APIs directly.
+ * {@link #getClientCastingStack} still returns a fresh empty stack because hex
+ * doesn't yet sync the stack to clients via an AttachmentType (pattern/spiral packets
+ * mutate the client-local stack instead).
  */
 public class ForgeClientXplatImpl implements IClientXplatAbstractions {
     @Override

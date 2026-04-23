@@ -40,23 +40,23 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
- * TODO(port-1.21): rebuild the full event-bus surface — brainswept mob event,
- * LivingConversionEvent, player-position recorder, break-speed veto, tool-strip
- * handling, RegisterPayloadHandlersEvent for each Msg*, EntityAttributeModificationEvent
- * routing, Curios → Accessories registration, creative-tab contents, break-speed
- * predicate, server-started per-world pattern gen, BuildCreativeModeTabContentsEvent,
- * etc. The original was 298 lines of legacy Forge events; each has a distinct 1.21
- * NeoForge equivalent (mostly on {@code modBus.addListener} + the new NeoForge events).
- * This stub handles only the skeleton:
+ * Main {@code @Mod} entry point for the NeoForge 1.21 build. Hex boots by:
  * <ul>
- *   <li>Hex configs (common/client/server).</li>
- *   <li>DeferredRegister wiring for every hex-owned registry onto the mod bus.</li>
- *   <li>Vanilla-registry additions via RegisterEvent, mirroring the Common binders.</li>
- *   <li>A minimal setup listener that runs hex's cross-platform init.</li>
+ *   <li>Building the three {@link ModConfigSpec} configs (common/client/server) and
+ *       stashing them on the common {@link HexConfig} singleton.</li>
+ *   <li>Binding every hex-owned registry and player/mob attachment through its
+ *       {@code DeferredRegister} on the mod event bus.</li>
+ *   <li>Adding vanilla-registry entries (sounds, items, blocks, block entities, recipe
+ *       stuff, particles, attributes, mob effects, potions, creative tabs, entity types)
+ *       via a single {@link RegisterEvent} listener that mirrors the cross-platform
+ *       binders.</li>
+ *   <li>Wiring the CustomPacketPayload handler and the brewing-recipe event.</li>
+ *   <li>Running hex's cross-platform setup (composting, strippables, akashic tree,
+ *       interop init) on {@link FMLCommonSetupEvent}.</li>
  * </ul>
- * With this class present the mod loads; actions/items/blocks appear in-world;
- * but anything capability-driven (brainsweep, pigment, altiora, sentinel, flight,
- * addl-data holders) stays inert until those subsystems land.
+ * AltioraLayer skin injection, creative-tab entry population via
+ * {@code BuildCreativeModeTabContentsEvent}, and the break-speed / tool-strip event
+ * listeners are still deferred.
  */
 @Mod(HexAPI.MOD_ID)
 public class ForgeHexInitializer {

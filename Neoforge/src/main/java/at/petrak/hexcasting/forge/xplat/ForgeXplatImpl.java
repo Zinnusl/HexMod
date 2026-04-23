@@ -59,19 +59,23 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 /**
- * TODO(port-1.21): large-surface platform bridge. The original 590-line Forge impl is
- * intertwined with the (legacy) Capability system, Curios interop, and the old
- * SimpleChannel packet handler — all three of which need separate 1.21 reimplementations
- * (BlockCapability / ItemCapability / EntityCapability; Accessories; CustomPacketPayload).
- * <p>
- * Until those land, this stub provides:
+ * NeoForge 1.21 platform bridge. Provides the ServiceLoader-discoverable
+ * {@link IXplatAbstractions} binding and now routes every capability-style query
+ * through real implementations:
  * <ul>
- *   <li>the ServiceLoader-discoverable {@link IXplatAbstractions} binding so
- *       {@code IXplatAbstractions.INSTANCE} is non-null at startup,</li>
- *   <li>real answers for the handful of queries that only need vanilla registries or
- *       FML loader state (platform, isModPresent, isPhysicalClient, hex registry lookups),</li>
- *   <li>null / default returns for every capability/pigment/flight/sentinel feature so
- *       callers don't NPE at link time.</li>
+ *   <li>Player/mob state (pigment, sentinel, altiora, flight, brainswept,
+ *       staffcast image, patterns-in-UI) via {@code HexAttachments} AttachmentTypes
+ *       with Codec-backed persistence.</li>
+ *   <li>ItemStack / Entity AD holders via instance-dispatched adapters in
+ *       {@code cap/adimpl/ADHolderAdapters}.</li>
+ *   <li>Packet flow via {@link at.petrak.hexcasting.forge.network.ForgePacketHandler}
+ *       (RegisterPayloadHandlersEvent + PacketDistributor).</li>
+ *   <li>Fluid IO, event veto (BreakEvent/EntityPlaceEvent), shears-loot condition,
+ *       pigment colour provider all backed by real NeoForge APIs.</li>
+ * </ul>
+ * Remaining stubs: AltioraLayer skin injection, creative-tab entry population,
+ * full Accessories interop (optional dep), full EMI interop (optional dep),
+ * findMediaHolder(ServerPlayer) (not called from Common).
  * </ul>
  * Functional behaviour (brainsweep persistence, pigment sync, flight, sentinel, etc.)
  * needs to be re-added on top of 1.21's attached-data / EntityCapability surface once
