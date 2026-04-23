@@ -145,5 +145,21 @@ public class ForgeHexInitializer {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
             (net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent evt) ->
                 HexPotions.registerMixes(evt.getBuilder(), evt.getRegistryAccess()));
+
+        // Brainswept mobs: swallow interactions and preserve the brainswept flag when
+        // the entity transforms (zombie <-> villager conversion etc.).
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
+            (net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific evt) -> {
+                var result = at.petrak.hexcasting.common.misc.BrainsweepingEvents.interactWithBrainswept(
+                    evt.getEntity(), evt.getLevel(), evt.getHand(), evt.getTarget(), null);
+                if (result == net.minecraft.world.InteractionResult.SUCCESS) {
+                    evt.setCancellationResult(result);
+                    evt.setCanceled(true);
+                }
+            });
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
+            (net.neoforged.neoforge.event.entity.living.LivingConversionEvent.Post evt) ->
+                at.petrak.hexcasting.common.misc.BrainsweepingEvents.copyBrainsweepPostTransformation(
+                    evt.getEntity(), evt.getOutcome()));
     }
 }
