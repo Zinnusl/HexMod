@@ -79,6 +79,17 @@ public class ForgeHexClientInitializer {
         evBus.addListener((ClientTickEvent.Post e) -> {
             ClientTickCounter.clientTickEnd();
             ShiftScrollListener.clientTickEnd();
+            // Tick every client-side casting stack so lifetime-based spiral pattern
+            // fade-out advances. Fabric's CCClientCastingStack implements
+            // ClientTickingComponent so CCA auto-ticks it; NeoForge doesn't, so drive
+            // the tick from here instead.
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc.level != null) {
+                for (var player : mc.level.players()) {
+                    at.petrak.hexcasting.xplat.IClientXplatAbstractions.INSTANCE
+                        .getClientCastingStack(player).tick();
+                }
+            }
         });
 
         evBus.addListener((InputEvent.MouseScrollingEvent e) -> {

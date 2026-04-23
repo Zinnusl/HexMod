@@ -56,12 +56,13 @@ public class ForgeClientXplatImpl implements IClientXplatAbstractions {
             func.call(stack, level, holder, holderID));
     }
 
+    // Per-player client-side casting stack. Lives only on the client — no save, no sync.
+    // WeakHashMap so the stack goes away when the player leaves and is garbage collected.
+    private static final java.util.WeakHashMap<Player, ClientCastingStack> CLIENT_STACKS = new java.util.WeakHashMap<>();
+
     @Override
     public ClientCastingStack getClientCastingStack(Player player) {
-        // TODO(port-1.21): backed by an attached data type (AttachmentType) on the player
-        // once hex's cap data is ported to 1.21. Return a fresh empty stack so UI code
-        // has something to render.
-        return new ClientCastingStack();
+        return CLIENT_STACKS.computeIfAbsent(player, p -> new ClientCastingStack());
     }
 
     @Override
