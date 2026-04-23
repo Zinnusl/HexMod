@@ -151,24 +151,30 @@ loom {
 //    config "hexcasting_forge.mixins.json"
 //}
 
-// NB: do NOT source-merge Common's main java/kotlin into Neoforge's compile
-// tasks, and do NOT add src/main/java to test.kotlin.srcDirs. Doing so emits
-// every xplat class into Neoforge/build/classes/**/{main,test}/, and loom
-// puts those dirs on runGameTest's classpath alongside Common's dev jar
-// (architectury's TransformerRuntime hot-loads
-// Common/build/devlibs/hexcasting-common-*-dev.jar). cpw.mods'
-// ModuleLayerHandler registers each dir/jar as a separate auto-module, so
-// the duplicate triggers "Modules hexcasting and generated_xxx export
-// package ... to module patchouli" and the server dies before Done.
+compileJava {
+    source(project(":Common").sourceSets.main.allSource)
+}
+compileKotlin {
+    source(project(":Common").sourceSets.main.kotlin)
+}
+// NB: do NOT add Common's main kotlin to compileTestKotlin, and do NOT add
+// src/main/java to the TEST kotlin srcDirs — doing so re-emits every main
+// class into Neoforge/build/classes/kotlin/test/, which loom then puts on
+// the runGameTest classpath alongside the main classes dir. cpw.mods'
+// ModuleLayerHandler treats each classpath dir as a separate auto-module,
+// so the duplicate triggers "Modules hexcasting and generated_xxx export
+// package ... to module patchouli" at boot. Neoforge has no test sources
+// of its own (compileTestJava: NO-SOURCE).
 //
-// Correct arch-loom setup: Common's classes are on Neoforge's compile
-// classpath via the `common` configuration (namedElements), on dev runtime
-// via TransformerRuntime + the dev jar, and in the prod jar via shadowBundle
-// (transformProductionNeoForge). Neoforge's own build output must contain
-// only platform-specific classes.
+// Main-side source-merge IS required: the production jar (remapJar output)
+// is just Neoforge's main classes dir with resources — no shadow plugin is
+// wired up. Without source-merging Common into Neoforge's main compile,
+// the mod jar ships with only forge/* classes and every mixin in
+// hexplat.mixins.json fails with "mixin '...' was not found" at boot.
 
 sourceSets {
     main.resources.srcDirs += ['src/generated/resources', '../Common/src/generated/resources']
+    main.kotlin.srcDirs += 'src/main/java'
     // The Neoforge platform glue hasn't been fully ported yet. Datagen, JEI (being
     // dropped for EMI), Curios interop (superseded by Accessories), the old Capability
     // system (replaced by BlockCapability / ItemCapability / EntityCapability in
