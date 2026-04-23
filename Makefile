@@ -1,7 +1,8 @@
 # Hex Casting deploy Makefile
 #
-# Target instance: christianmods (MC 1.21.1 / NeoForge 21.1.227)
+# Target instance: christianmods_w_hexcasting (MC 1.21.1 / NeoForge 21.1.x)
 # Builds the NeoForge jar from the `devel/port-1.21` branch and copies it
+# — plus the two hard runtime dependencies (kotlin-for-forge, patchouli) —
 # into the pack's mods directory.
 #
 # Usage:
@@ -21,7 +22,7 @@
 # resolve. Override with `make SHELL=/bin/sh` if you prefer a POSIX shell.
 SHELL := /bin/bash.exe
 
-INSTANCE ?= E:/CurseForge/Install/Instances/christianmods
+INSTANCE ?= E:/CurseForge/Install/Instances/christianmods_w_hexcasting
 MODS_DIR ?= $(INSTANCE)/mods
 JAR_DIR  := Neoforge/build/libs
 GRADLEW  := sh ./gradlew
@@ -30,7 +31,7 @@ GRADLEW  := sh ./gradlew
 # Excludes -dev, -sources, -shadow, -all variants produced by loom/shadow.
 JAR_PATTERN := hexcasting-neoforge-*.jar
 
-.PHONY: all build deploy clean run verify help smoketest smoketest-clean
+.PHONY: all build deploy clean run verify help smoketest smoketest-clean gametest
 
 all: deploy
 
@@ -42,6 +43,7 @@ help:
 	@echo "make verify          -- show resolved paths and existing hex jars in target"
 	@echo "make smoketest       -- boot dedicated server with only hex jar, check for errors"
 	@echo "make smoketest-clean -- wipe build/smoketest (forces fresh server install)"
+	@echo "make gametest        -- run hex @GameTest assertions (feeble_mind attribute, staff use, amethyst cluster, recipe)"
 
 build:
 	$(GRADLEW) :Neoforge:build
@@ -72,7 +74,8 @@ deploy: build
 	fi; \
 	rm -f "$(MODS_DIR)"/hexcasting-*.jar; \
 	cp "$$jar" "$(MODS_DIR)/"; \
-	echo "Deployed $$(basename $$jar) -> $(MODS_DIR)"
+	echo "Deployed $$(basename $$jar) -> $(MODS_DIR)"; \
+	bash scripts/install_deps.sh "$(MODS_DIR)"
 
 # Boot a dedicated server with only the hex jar, wait for "Done (", /stop,
 # verify no mod-loading exceptions. Installs NeoForge server into
@@ -83,3 +86,11 @@ smoketest: build
 smoketest-clean:
 	@rm -rf build/smoketest
 	@echo "build/smoketest removed"
+
+# Run the @GameTest assertions in HexGameTests. Each test spawns a mock
+# player / block setup, asserts gameplay invariants (feeble_mind attribute
+# registered, staff.use doesn't throw, amethyst cluster break survives,
+# amethyst_pillar recipe matches), and the gradle run returns non-zero if
+# any assertion fires.
+gametest:
+	@bash scripts/gametest.sh

@@ -124,7 +124,15 @@ public class ForgeHexInitializer {
                 at.petrak.hexcasting.common.lib.hex.HexArithmetics::register);
             bindIfMatching(evt, at.petrak.hexcasting.common.lib.HexRegistries.EVAL_SOUND,
                 at.petrak.hexcasting.common.lib.hex.HexEvalSounds::register);
+            bindIfMatching(evt, at.petrak.hexcasting.common.lib.HexRegistries.CONTINUATION_TYPE,
+                at.petrak.hexcasting.common.lib.hex.HexContinuationTypes::registerContinuations);
         });
+
+        // BlockSetType isn't a vanilla registry in 1.21 — it's a plain static VALUES
+        // map populated via BlockSetType.register(BlockSetType). Wire via a direct
+        // call at mod construction; Fabric does the same on its platform init.
+        at.petrak.hexcasting.common.lib.HexBlockSetTypes.registerBlocks(
+            net.minecraft.world.level.block.state.properties.BlockSetType::register);
 
         // Forge-side DeferredRegisters (argument types, loot modifier serializers,
         // custom ingredient types).
@@ -157,6 +165,19 @@ public class ForgeHexInitializer {
             at.petrak.hexcasting.common.misc.RegisterMisc.register();
             HexInterop.init();
         }));
+
+        // Hex adds custom Attributes (feeble_mind, grid_zoom, etc.) to the Player's
+        // attribute supplier. Without this, LivingEntity.getAttributeValue(holder)
+        // throws IllegalArgumentException — which is what crashed the client when the
+        // staff's use() path read FEEBLE_MIND. Plug every hex attribute into PLAYER.
+        modBus.addListener((net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent evt) -> {
+            evt.add(net.minecraft.world.entity.EntityType.PLAYER, HexAttributes.holder(HexAttributes.GRID_ZOOM));
+            evt.add(net.minecraft.world.entity.EntityType.PLAYER, HexAttributes.holder(HexAttributes.SCRY_SIGHT));
+            evt.add(net.minecraft.world.entity.EntityType.PLAYER, HexAttributes.holder(HexAttributes.FEEBLE_MIND));
+            evt.add(net.minecraft.world.entity.EntityType.PLAYER, HexAttributes.holder(HexAttributes.MEDIA_CONSUMPTION_MODIFIER));
+            evt.add(net.minecraft.world.entity.EntityType.PLAYER, HexAttributes.holder(HexAttributes.AMBIT_RADIUS));
+            evt.add(net.minecraft.world.entity.EntityType.PLAYER, HexAttributes.holder(HexAttributes.SENTINEL_RADIUS));
+        });
 
         // Custom stats + advancement triggers both write into BuiltInRegistries slots
         // (CUSTOM_STAT, TRIGGER_TYPE). On 1.21 those registries freeze before

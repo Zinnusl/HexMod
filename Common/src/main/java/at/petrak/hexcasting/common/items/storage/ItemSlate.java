@@ -12,6 +12,7 @@ import at.petrak.hexcasting.common.blocks.circles.BlockEntitySlate;
 import at.petrak.hexcasting.common.lib.hex.HexIotaTypes;
 import at.petrak.hexcasting.common.misc.PatternTooltip;
 // Inline interop removed: see PatternIota.displayNonInline.
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
@@ -45,8 +47,25 @@ public class ItemSlate extends BlockItem implements IotaHolderItem {
         return Component.translatable(key).append(patternText);
     }
 
+    // 1.21: block-entity-from-item-stack data lives in the
+    // {@link DataComponents#BLOCK_ENTITY_DATA} component ({@link CustomData}),
+    // not under a legacy "BlockEntityTag" NBT path. Read/write through these
+    // helpers so the slate's stored pattern survives place/break/pickup.
+    private static @Nullable CompoundTag readBlockEntityData(ItemStack stack) {
+        CustomData data = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+        return data == null ? null : data.copyTag();
+    }
+
+    private static void writeBlockEntityData(ItemStack stack, @Nullable CompoundTag tag) {
+        if (tag == null || tag.isEmpty()) {
+            stack.remove(DataComponents.BLOCK_ENTITY_DATA);
+        } else {
+            stack.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(tag));
+        }
+    }
+
     public static Optional<HexPattern> getPattern(ItemStack stack){
-        var bet = NBTHelper.getCompound(stack, "BlockEntityTag");
+        var bet = readBlockEntityData(stack);
 
         if (bet != null && bet.contains(BlockEntitySlate.TAG_PATTERN, Tag.TAG_COMPOUND)) {
             var patTag = bet.getCompound(BlockEntitySlate.TAG_PATTERN);
@@ -65,7 +84,7 @@ public class ItemSlate extends BlockItem implements IotaHolderItem {
     @SoftImplement("IForgeItem")
     public boolean onEntityItemUpdate(ItemStack stack, ItemEntity entity) {
         if (!hasPattern(stack)) {
-            NBTHelper.remove(stack, "BlockEntityTag");
+            stack.remove(DataComponents.BLOCK_ENTITY_DATA);
         }
         return false;
     }
@@ -73,14 +92,14 @@ public class ItemSlate extends BlockItem implements IotaHolderItem {
     @Override
     public void inventoryTick(ItemStack pStack, Level pLevel, Entity pEntity, int pSlotId, boolean pIsSelected) {
         if (!hasPattern(pStack)) {
-            NBTHelper.remove(pStack, "BlockEntityTag");
+            pStack.remove(DataComponents.BLOCK_ENTITY_DATA);
         }
     }
 
     @Override
     public @Nullable
     CompoundTag readIotaTag(ItemStack stack) {
-        var bet = NBTHelper.getCompound(stack, "BlockEntityTag");
+        var bet = readBlockEntityData(stack);
 
         if (bet == null || !bet.contains(BlockEntitySlate.TAG_PATTERN, Tag.TAG_COMPOUND)) {
             return null;
@@ -109,16 +128,14 @@ public class ItemSlate extends BlockItem implements IotaHolderItem {
     @Override
     public void writeDatum(ItemStack stack, Iota datum) {
         if (this.canWrite(stack, datum)) {
+            var beTag = readBlockEntityData(stack);
+            if (beTag == null) beTag = new CompoundTag();
             if (datum == null) {
-                var beTag = NBTHelper.getOrCreateCompound(stack, "BlockEntityTag");
                 beTag.remove(BlockEntitySlate.TAG_PATTERN);
-                if (beTag.isEmpty()) {
-                    NBTHelper.remove(stack, "BlockEntityTag");
-                }
             } else if (datum instanceof PatternIota pat) {
-                var beTag = NBTHelper.getOrCreateCompound(stack, "BlockEntityTag");
                 beTag.put(BlockEntitySlate.TAG_PATTERN, pat.getPattern().serializeToNBT());
             }
+            writeBlockEntityData(stack, beTag);
         }
     }
 

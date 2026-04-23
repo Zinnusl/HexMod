@@ -11,9 +11,7 @@
             {
               "function": "set_components",
               "components": {
-                "minecraft:custom_data": {
-                  "patchouli:book": "hexcasting:thehexbook"
-                }
+                "patchouli:book": "hexcasting:thehexbook"
               }
             }
           ]
