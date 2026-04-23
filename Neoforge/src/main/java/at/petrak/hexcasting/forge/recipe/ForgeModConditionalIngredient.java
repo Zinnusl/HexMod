@@ -23,11 +23,26 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
 public class ForgeModConditionalIngredient implements ICustomIngredient {
     public static final ResourceLocation ID = modLoc("mod_conditional");
 
+    // Tolerant variant of Ingredient.CODEC: if the inner ingredient references an item
+    // that doesn't exist at parse time (e.g. farmersdelight:skillet while FD is absent),
+    // silently substitute Ingredient.of(). That's the whole point of mod_conditional —
+    // letting a recipe reference a mod-specific item without failing to parse when the
+    // mod is missing. Vanilla Ingredient.CODEC is eager, so wrap it.
+    private static final com.mojang.serialization.Codec<Ingredient> TOLERANT_INGREDIENT =
+        com.mojang.serialization.Codec.PASSTHROUGH.flatXmap(
+            dyn -> com.mojang.serialization.DataResult.success(
+                Ingredient.CODEC.parse(dyn).result().orElse(Ingredient.of())),
+            ing -> {
+                var r = Ingredient.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, ing);
+                return r.map(json -> new com.mojang.serialization.Dynamic<>(com.mojang.serialization.JsonOps.INSTANCE, json));
+            }
+        );
+
     public static final MapCodec<ForgeModConditionalIngredient> CODEC = RecordCodecBuilder.mapCodec(inst ->
         inst.group(
-            Ingredient.CODEC.fieldOf("default").forGetter(ForgeModConditionalIngredient::getMain),
+            TOLERANT_INGREDIENT.fieldOf("default").forGetter(ForgeModConditionalIngredient::getMain),
             com.mojang.serialization.Codec.STRING.fieldOf("modid").forGetter(ForgeModConditionalIngredient::getModid),
-            Ingredient.CODEC.fieldOf("if_loaded").forGetter(ForgeModConditionalIngredient::getIfModLoaded)
+            TOLERANT_INGREDIENT.fieldOf("if_loaded").forGetter(ForgeModConditionalIngredient::getIfModLoaded)
         ).apply(inst, ForgeModConditionalIngredient::new)
     );
 

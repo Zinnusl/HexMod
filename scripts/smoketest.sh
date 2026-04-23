@@ -80,6 +80,24 @@ rm -f "$MODS_DIR"/kotlinforforge-*.jar
 cp "$KFF_JAR" "$MODS_DIR/$(basename "$KFF_JAR")"
 log "Bundled dep $(basename "$KFF_JAR")"
 
+# Optional dependencies hex advertises in mods.toml. Pulling these into the
+# smoketest clears the remaining 3 warnings about missing optional-mod content
+# (patchouli guide_book item, patchouli:shapeless_book_recipe serializer,
+# farmersdelight:skillet in pride_colorizer_pansexual).
+fetch_mod() {
+    local dest="$1" url="$2"
+    if [ ! -f "$dest" ]; then
+        log "Fetching $(basename "$dest") from Modrinth"
+        curl -sSL --fail -o "$dest.tmp" "$url" && mv "$dest.tmp" "$dest" \
+            || fail "download failed: $url"
+    fi
+}
+PATCHOULI_JAR="$CACHE_DIR/Patchouli-1.21.1-93-NEOFORGE.jar"
+fetch_mod "$PATCHOULI_JAR" "https://cdn.modrinth.com/data/nU0bVIaL/versions/BIogJv2D/Patchouli-1.21.1-93-NEOFORGE.jar"
+rm -f "$MODS_DIR"/Patchouli-*.jar "$MODS_DIR"/FarmersDelight-*.jar
+cp "$PATCHOULI_JAR" "$MODS_DIR/$(basename "$PATCHOULI_JAR")"
+log "Bundled optional dep: patchouli"
+
 # --- pick a run script ------------------------------------------------------
 # NeoForge installs run.sh (Unix) and run.bat (Windows) side by side. When the
 # JDK is the Windows build (Temurin etc. under mingw/MSYS), the Unix classpath
@@ -168,7 +186,7 @@ esac
 # Stderr/exception scan. Vanilla & deps emit the word "error" in several
 # harmless contexts, so match only the patterns that genuinely indicate a
 # mod-loading or registry failure.
-BAD_PATTERN='NoClassDefFoundError|ClassNotFoundException|NullPointerException|MOD LOADING ERROR|Failed to load registries|Mixin apply failed|Unable to load registries|Encountered an exception while loading'
+BAD_PATTERN='NoClassDefFoundError|ClassNotFoundException|NullPointerException|MOD LOADING ERROR|Failed to load registries|Mixin apply failed|Unable to load registries|Encountered an exception while loading|Parsing error loading recipe hexcasting:|Couldn'"'"'t parse element.*:hexcasting:'
 if grep -qE "$BAD_PATTERN" "$BOOT_LOG"; then
     log "Exceptions detected in boot log"
     grep -nE "$BAD_PATTERN" "$BOOT_LOG" | head -30
