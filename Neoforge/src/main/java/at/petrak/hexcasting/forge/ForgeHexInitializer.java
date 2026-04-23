@@ -161,5 +161,32 @@ public class ForgeHexInitializer {
             (net.neoforged.neoforge.event.entity.living.LivingConversionEvent.Post evt) ->
                 at.petrak.hexcasting.common.misc.BrainsweepingEvents.copyBrainsweepPostTransformation(
                     evt.getEntity(), evt.getOutcome()));
+
+        // Creative tab population: BuildCreativeModeTabContentsEvent fires once per tab
+        // on the mod bus. Route both hex tabs through the cross-platform entry lists so
+        // HEX and SCROLLS end up with the same items Fabric populates via
+        // ItemGroupEvents.MODIFY_ENTRIES_ALL.
+        modBus.addListener(
+            (net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent evt) -> {
+                var tab = evt.getTab();
+                HexBlocks.registerBlockCreativeTab(
+                    block -> evt.accept(new net.minecraft.world.item.ItemStack(block)), tab);
+                HexItems.registerItemCreativeTab(evt, tab);
+            });
+
+        // Initial state sync on login: AttachmentType doesn't auto-sync, so fan out the
+        // Msg*Ack payloads the cap setters use on mutation so the client has the loaded
+        // save data for pigment / sentinel / altiora / flight / brainswept state.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
+            (net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent evt) -> {
+                if (!(evt.getEntity() instanceof net.minecraft.server.level.ServerPlayer sp)) return;
+                var xplat = at.petrak.hexcasting.xplat.IXplatAbstractions.INSTANCE;
+                xplat.sendPacketToPlayer(sp,
+                    new at.petrak.hexcasting.forge.network.MsgPigmentUpdateAck(xplat.getPigment(sp)));
+                xplat.sendPacketToPlayer(sp,
+                    new at.petrak.hexcasting.forge.network.MsgSentinelStatusUpdateAck(xplat.getSentinel(sp)));
+                xplat.sendPacketToPlayer(sp,
+                    new at.petrak.hexcasting.forge.network.MsgAltioraUpdateAck(xplat.getAltiora(sp)));
+            });
     }
 }
