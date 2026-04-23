@@ -44,6 +44,10 @@ dependencies {
     // === OTHER STUFF ===
     compileOnly "org.jetbrains:annotations:$jetbrainsAnnotationsVersion"
     testCompileOnly "org.jetbrains:annotations:$jetbrainsAnnotationsVersion"
+    // Tests that touch Patchouli processors/components need the API on the test
+    // classpath; the main code already declares it as compileOnly. Tests reference
+    // IVariableProvider + IVariable directly, so we need both compile and runtime here.
+    testImplementation "vazkii.patchouli:Patchouli-xplat:1.21-$patchouliVersion-SNAPSHOT"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.1'
