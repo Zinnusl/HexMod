@@ -1,11 +1,14 @@
 package at.petrak.hexcasting.common.lib;
 
-import at.petrak.hexcasting.mixin.accessor.AccessorPotionBrewing;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.Potions;
 
 import java.util.LinkedHashMap;
@@ -19,7 +22,6 @@ public class HexPotions {
         for (var e : POTIONS.entrySet()) {
             r.accept(e.getValue(), e.getKey());
         }
-        HexPotions.addRecipes();
     }
 
     private static final Map<ResourceLocation, Potion> POTIONS = new LinkedHashMap<>();
@@ -41,19 +43,30 @@ public class HexPotions {
     public static final Potion SHRINK_GRID_STRONG = make("shrink_grid_strong",
         new Potion("shrink_grid_strong", new MobEffectInstance(Holder.direct(HexMobEffects.SHRINK_GRID), 1800, 1)));
 
-    public static void addRecipes() {
-        // AccessorPotionBrewing.addMix is a no-op stub on 1.21 (see accessor javadoc).
-        // Real mix registration needs RegisterBrewingRecipesEvent on Neoforge init.
-        AccessorPotionBrewing.addMix(Potions.AWKWARD.value(), HexItems.AMETHYST_DUST, ENLARGE_GRID);
-        AccessorPotionBrewing.addMix(ENLARGE_GRID, Items.REDSTONE, ENLARGE_GRID_LONG);
-        AccessorPotionBrewing.addMix(ENLARGE_GRID, Items.GLOWSTONE_DUST, ENLARGE_GRID_STRONG);
+    /**
+     * 1.21: brewing-recipe registration lives on the PotionBrewing.Builder fed by
+     * RegisterBrewingRecipesEvent (NeoForge) or the FabricBrewingRecipeRegistryBuilder
+     * event (Fabric). Platforms call this with their builder + the event's RegistryAccess.
+     */
+    public static void registerMixes(PotionBrewing.Builder builder, HolderLookup.Provider registryAccess) {
+        HolderLookup.RegistryLookup<Potion> lookup = registryAccess.lookupOrThrow(Registries.POTION);
+        Holder<Potion> enlarge = lookup.getOrThrow(ResourceKey.create(Registries.POTION, modLoc("enlarge_grid")));
+        Holder<Potion> enlargeLong = lookup.getOrThrow(ResourceKey.create(Registries.POTION, modLoc("enlarge_grid_long")));
+        Holder<Potion> enlargeStrong = lookup.getOrThrow(ResourceKey.create(Registries.POTION, modLoc("enlarge_grid_strong")));
+        Holder<Potion> shrink = lookup.getOrThrow(ResourceKey.create(Registries.POTION, modLoc("shrink_grid")));
+        Holder<Potion> shrinkLong = lookup.getOrThrow(ResourceKey.create(Registries.POTION, modLoc("shrink_grid_long")));
+        Holder<Potion> shrinkStrong = lookup.getOrThrow(ResourceKey.create(Registries.POTION, modLoc("shrink_grid_strong")));
 
-        AccessorPotionBrewing.addMix(ENLARGE_GRID, Items.FERMENTED_SPIDER_EYE, SHRINK_GRID);
-        AccessorPotionBrewing.addMix(ENLARGE_GRID_LONG, Items.FERMENTED_SPIDER_EYE, SHRINK_GRID_LONG);
-        AccessorPotionBrewing.addMix(ENLARGE_GRID_STRONG, Items.FERMENTED_SPIDER_EYE, SHRINK_GRID_STRONG);
+        builder.addMix(Potions.AWKWARD, HexItems.AMETHYST_DUST, enlarge);
+        builder.addMix(enlarge, Items.REDSTONE, enlargeLong);
+        builder.addMix(enlarge, Items.GLOWSTONE_DUST, enlargeStrong);
 
-        AccessorPotionBrewing.addMix(SHRINK_GRID, Items.REDSTONE, SHRINK_GRID_LONG);
-        AccessorPotionBrewing.addMix(SHRINK_GRID, Items.GLOWSTONE_DUST, SHRINK_GRID_STRONG);
+        builder.addMix(enlarge, Items.FERMENTED_SPIDER_EYE, shrink);
+        builder.addMix(enlargeLong, Items.FERMENTED_SPIDER_EYE, shrinkLong);
+        builder.addMix(enlargeStrong, Items.FERMENTED_SPIDER_EYE, shrinkStrong);
+
+        builder.addMix(shrink, Items.REDSTONE, shrinkLong);
+        builder.addMix(shrink, Items.GLOWSTONE_DUST, shrinkStrong);
     }
 
     private static <T extends Potion> T make(String id, T potion) {

@@ -138,5 +138,12 @@ public class ForgeHexInitializer {
             AkashicTreeGrower.init();
             HexInterop.init();
         }));
+
+        // RegisterBrewingRecipesEvent fires on the main (NeoForge) event bus at world
+        // load. The builder it carries is the PotionBrewing.Builder vanilla uses to
+        // seed its recipe list.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
+            (net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent evt) ->
+                HexPotions.registerMixes(evt.getBuilder(), evt.getRegistryAccess()));
     }
 }
