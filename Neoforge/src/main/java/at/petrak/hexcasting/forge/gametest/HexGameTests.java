@@ -29,8 +29,12 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder("hexcasting")
 @PrefixGameTestTemplate(false)
 public final class HexGameTests {
-    /** A minimal 3x3x3 empty structure used for setup-less tests. */
-    private static final String EMPTY = "hexcasting:empty";
+    /** A minimal 3x3x3 empty structure used for setup-less tests.
+     * Bare path — NeoForge's GameTestHooks prepends the
+     * {@code @GameTestHolder("hexcasting")} namespace. Including it here too
+     * produces "hexcasting:hexcasting:empty" and crashes the test server with
+     * ResourceLocationException before any assertion runs. */
+    private static final String EMPTY = "empty";
 
     private HexGameTests() {}
 
@@ -293,6 +297,46 @@ public final class HexGameTests {
         ((at.petrak.hexcasting.api.item.IotaHolderItem) HexItems.SLATE).writeDatum(stack, null);
         helper.assertTrue(!at.petrak.hexcasting.common.items.storage.ItemSlate.hasPattern(stack),
             "slate pattern cleared by null writeDatum");
+        helper.succeed();
+    }
+
+    /**
+     * Reproduces Scribe's Gambit failure on blank slates. OpWrite goes through
+     * {@code IXplatAbstractions.INSTANCE.findDataHolder(stack)} to get an
+     * {@code ADIotaHolder}, then calls {@code writeIota(iota, simulate=true)}
+     * before committing. If the adapter returns null, or writeIota returns false
+     * on a PatternIota target, MishapBadOffhandItem "needs a place that will
+     * accept ..." is thrown.
+     * <p>
+     * The Common unit test {@code ScribesGambitRepro} only exercises
+     * {@code ItemSlate.canWrite/writeDatum} directly — it does NOT go through the
+     * xplat adapter, because the Common test stub's {@code findDataHolder} returns
+     * null. This gametest runs on NeoForge with {@code ForgeXplatImpl} active, so
+     * it catches regressions in the adapter dispatch too.
+     */
+    @GameTest(template = EMPTY)
+    public static void scribesGambitAcceptsBlankSlate(GameTestHelper helper) {
+        var stack = new ItemStack(HexItems.SLATE);
+        var pattern = at.petrak.hexcasting.api.casting.math.HexPattern.fromAngles(
+            "qaq", at.petrak.hexcasting.api.casting.math.HexDir.NORTH_EAST);
+        var iota = new at.petrak.hexcasting.api.casting.iota.PatternIota(pattern);
+
+        var xplat = at.petrak.hexcasting.xplat.IXplatAbstractions.INSTANCE;
+        var holder = xplat.findDataHolder(stack);
+        helper.assertTrue(holder != null,
+            "findDataHolder(blank slate) must return a non-null ADIotaHolder — "
+                + "Scribe's Gambit throws MishapBadOffhandItem 'iota.write' otherwise");
+        helper.assertTrue(holder.writeable(),
+            "blank slate ADIotaHolder.writeable() must be true");
+        helper.assertTrue(holder.writeIota(iota, true),
+            "blank slate ADIotaHolder.writeIota(PatternIota, simulate=true) must return true — "
+                + "this is exactly the check OpWrite performs before throwing 'iota.readonly'");
+
+        // Real write must also succeed and persist.
+        helper.assertTrue(holder.writeIota(iota, false),
+            "blank slate ADIotaHolder.writeIota(PatternIota, simulate=false) must return true");
+        helper.assertTrue(at.petrak.hexcasting.common.items.storage.ItemSlate.hasPattern(stack),
+            "slate must have a pattern after non-simulated writeIota");
         helper.succeed();
     }
 }

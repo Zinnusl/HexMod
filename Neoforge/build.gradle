@@ -29,7 +29,15 @@ configurations {
     }
     compileClasspath.extendsFrom common
     runtimeClasspath.extendsFrom common
-    developmentNeoForge.extendsFrom common
+    // Intentionally NOT extending developmentNeoForge from common:
+    // architectury-loom's TransformerRuntime already hot-loads
+    // Common/build/devlibs/hexcasting-common-*-dev.jar into the dev classpath.
+    // Extending developmentNeoForge from `common` puts Common's namedElements on
+    // the dev classpath a SECOND time, and cpw.mods.modlauncher's
+    // ModuleLayerHandler registers the duplicate as an auto-module (name like
+    // `generated_xxxxxxx`). That collides with the `hexcasting` module on every
+    // Common package and aborts server boot with "Modules hexcasting and
+    // generated_xxxxxxx export package ..." during runGameTest.
 
     // Files in this configuration will be bundled into your mod using the Shadow plugin.
     // Don't use the `shadow` configuration from the plugin itself as it's meant for excluding files.
@@ -98,6 +106,14 @@ dependencies {
     forgeRuntimeLibrary("io.wispforest:endec:0.1.8")
     forgeRuntimeLibrary("io.wispforest.endec:gson:0.1.5")
     forgeRuntimeLibrary("io.wispforest.endec:netty:0.1.4")
+    // Accessories also pulls blue.endless:jankson + io.wispforest.endec:jankson at
+    // runtime. modImplementation doesn't drag these onto the dev classpath, so
+    // runGameTest fails at Accessories' <clinit> with
+    //   NoClassDefFoundError: blue/endless/jankson/Jankson$Builder
+    // unless they're forgeRuntimeLibrary'd explicitly. Versions match accessories'
+    // pom (1.1.0-beta.16+1.21.1).
+    forgeRuntimeLibrary("blue.endless:jankson:1.2.2")
+    forgeRuntimeLibrary("io.wispforest.endec:jankson:0.1.5")
 }
 
 def generatedResources = project(":Common").file("src/generated/resources")
@@ -135,20 +151,24 @@ loom {
 //    config "hexcasting_forge.mixins.json"
 //}
 
-compileJava {
-    source(project(":Common").sourceSets.main.allSource)
-}
-compileKotlin {
-    source(project(":Common").sourceSets.main.kotlin)
-}
-compileTestKotlin {
-    source(project(":Common").sourceSets.main.kotlin)
-}
+// NB: do NOT source-merge Common's main java/kotlin into Neoforge's compile
+// tasks, and do NOT add src/main/java to test.kotlin.srcDirs. Doing so emits
+// every xplat class into Neoforge/build/classes/**/{main,test}/, and loom
+// puts those dirs on runGameTest's classpath alongside Common's dev jar
+// (architectury's TransformerRuntime hot-loads
+// Common/build/devlibs/hexcasting-common-*-dev.jar). cpw.mods'
+// ModuleLayerHandler registers each dir/jar as a separate auto-module, so
+// the duplicate triggers "Modules hexcasting and generated_xxx export
+// package ... to module patchouli" and the server dies before Done.
+//
+// Correct arch-loom setup: Common's classes are on Neoforge's compile
+// classpath via the `common` configuration (namedElements), on dev runtime
+// via TransformerRuntime + the dev jar, and in the prod jar via shadowBundle
+// (transformProductionNeoForge). Neoforge's own build output must contain
+// only platform-specific classes.
 
 sourceSets {
     main.resources.srcDirs += ['src/generated/resources', '../Common/src/generated/resources']
-    main.kotlin.srcDirs += 'src/main/java'
-    test.kotlin.srcDirs += 'src/main/java'
     // The Neoforge platform glue hasn't been fully ported yet. Datagen, JEI (being
     // dropped for EMI), Curios interop (superseded by Accessories), the old Capability
     // system (replaced by BlockCapability / ItemCapability / EntityCapability in
