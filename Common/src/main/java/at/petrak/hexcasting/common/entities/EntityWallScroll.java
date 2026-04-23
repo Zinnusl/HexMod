@@ -37,6 +37,14 @@ public class EntityWallScroll extends HangingEntity {
     private static final EntityDataAccessor<Boolean> SHOWS_STROKE_ORDER = SynchedEntityData.defineId(
         EntityWallScroll.class,
         EntityDataSerializers.BOOLEAN);
+    // 1.21: sync scroll + blockSize via SynchedEntityData so the client sees them on
+    // first spawn instead of needing a bundled MsgNewWallScrollS2C payload.
+    private static final EntityDataAccessor<ItemStack> SCROLL_ITEM = SynchedEntityData.defineId(
+        EntityWallScroll.class,
+        EntityDataSerializers.ITEM_STACK);
+    private static final EntityDataAccessor<Integer> BLOCK_SIZE = SynchedEntityData.defineId(
+        EntityWallScroll.class,
+        EntityDataSerializers.INT);
 
     public ItemStack scroll;
     @Nullable
@@ -56,6 +64,8 @@ public class EntityWallScroll extends HangingEntity {
         this.blockSize = blockSize;
 
         this.entityData.set(SHOWS_STROKE_ORDER, showStrokeOrder);
+        this.entityData.set(SCROLL_ITEM, scroll.copy());
+        this.entityData.set(BLOCK_SIZE, blockSize);
         this.scroll = scroll;
         this.recalculateDisplay();
         this.recalculateBoundingBox();
@@ -76,6 +86,22 @@ public class EntityWallScroll extends HangingEntity {
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(SHOWS_STROKE_ORDER, false);
+        builder.define(SCROLL_ITEM, ItemStack.EMPTY);
+        builder.define(BLOCK_SIZE, 1);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (this.level().isClientSide) {
+            if (SCROLL_ITEM.equals(key)) {
+                this.scroll = this.entityData.get(SCROLL_ITEM);
+                this.recalculateDisplay();
+            } else if (BLOCK_SIZE.equals(key)) {
+                this.blockSize = this.entityData.get(BLOCK_SIZE);
+                this.recalculateBoundingBox();
+            }
+        }
     }
 
     public boolean getShowsStrokeOrder() {
@@ -145,10 +171,6 @@ public class EntityWallScroll extends HangingEntity {
         this.playSound(SoundEvents.PAINTING_PLACE, 1.0F, 1.0F);
     }
 
-    // 1.21: getAddEntityPacket now takes a ServerEntity. The custom MsgNewWallScrollS2C
-    // bundling has been replaced with a stock ClientboundAddEntityPacket — the wall-scroll
-    // specific fields are synced via entity data / save data on the next tick.
-    // TODO(port-1.21): restore the bundled new-entity packet via CustomPacketPayload.
     @Override
     public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity serverEntity) {
         return new ClientboundAddEntityPacket(this, serverEntity);
