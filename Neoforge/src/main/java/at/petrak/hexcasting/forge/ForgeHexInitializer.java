@@ -138,6 +138,7 @@ public class ForgeHexInitializer {
             AkashicTreeGrower.init();
             at.petrak.hexcasting.common.misc.RegisterMisc.register();
             at.petrak.hexcasting.api.mod.HexStatistics.register();
+            at.petrak.hexcasting.api.advancements.HexAdvancementTriggers.registerTriggers();
             HexInterop.init();
         }));
 
