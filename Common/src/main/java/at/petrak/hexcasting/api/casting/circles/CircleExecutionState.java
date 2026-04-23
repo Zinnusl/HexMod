@@ -188,17 +188,21 @@ public class CircleExecutionState {
         var startPos = NbtUtils.readBlockPos(nbt, TAG_IMPETUS_POS).orElse(BlockPos.ZERO);
         var startDir = Direction.values()[nbt.getByte(TAG_IMPETUS_DIR)];
 
+        // save() writes each position via NbtUtils.writeBlockPos(BlockPos), which on 1.21
+        // emits an IntArrayTag [x,y,z]. Load must match: read as TAG_INT_ARRAY list and
+        // convert each element. The pre-fix load used TAG_COMPOUND which silently returned
+        // an empty list, dropping all traversal positions on world reload.
         var knownPositions = new HashSet<BlockPos>();
-        var knownTag = nbt.getList(TAG_KNOWN_POSITIONS, Tag.TAG_COMPOUND);
+        var knownTag = nbt.getList(TAG_KNOWN_POSITIONS, Tag.TAG_INT_ARRAY);
         for (int i = 0; i < knownTag.size(); i++) {
-            var sub = knownTag.getCompound(i);
-            NbtUtils.readBlockPos(sub, "pos").ifPresent(knownPositions::add);
+            int[] xyz = knownTag.getIntArray(i);
+            if (xyz.length == 3) knownPositions.add(new BlockPos(xyz[0], xyz[1], xyz[2]));
         }
         var reachedPositions = new ArrayList<BlockPos>();
-        var reachedTag = nbt.getList(TAG_REACHED_POSITIONS, Tag.TAG_COMPOUND);
+        var reachedTag = nbt.getList(TAG_REACHED_POSITIONS, Tag.TAG_INT_ARRAY);
         for (int i = 0; i < reachedTag.size(); i++) {
-            var sub = reachedTag.getCompound(i);
-            NbtUtils.readBlockPos(sub, "pos").ifPresent(reachedPositions::add);
+            int[] xyz = reachedTag.getIntArray(i);
+            if (xyz.length == 3) reachedPositions.add(new BlockPos(xyz[0], xyz[1], xyz[2]));
         }
 
         var currentPos = NbtUtils.readBlockPos(nbt, TAG_CURRENT_POS).orElse(BlockPos.ZERO);
