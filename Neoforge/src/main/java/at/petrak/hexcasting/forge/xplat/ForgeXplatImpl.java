@@ -242,8 +242,25 @@ public class ForgeXplatImpl implements IXplatAbstractions {
         Block... blocks) {
         return BlockEntityType.Builder.of(func::apply, blocks).build(null);
     }
-    @Override public boolean tryPlaceFluid(Level level, InteractionHand hand, BlockPos pos, Fluid fluid) { return false; }
-    @Override public boolean drainAllFluid(Level level, BlockPos pos) { return false; }
+    @Override public boolean tryPlaceFluid(Level level, InteractionHand hand, BlockPos pos, Fluid fluid) {
+        var state = level.getBlockState(pos);
+        if (!state.canBeReplaced(fluid)) return false;
+        level.setBlockAndUpdate(pos, fluid.defaultFluidState().createLegacyBlock());
+        level.playSound(null, pos, fluid.getFluidType().getSound(net.neoforged.neoforge.common.SoundActions.BUCKET_EMPTY),
+            net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 1.0F);
+        return true;
+    }
+    @Override public boolean drainAllFluid(Level level, BlockPos pos) {
+        var state = level.getBlockState(pos);
+        var fluid = state.getFluidState();
+        if (fluid.isEmpty()) return false;
+        if (state.getBlock() instanceof net.minecraft.world.level.block.BucketPickup pickup) {
+            var leftover = pickup.pickupBlock(null, level, pos, state);
+            return !leftover.isEmpty();
+        }
+        level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        return true;
+    }
 
     // misc
     @Override public boolean isCorrectTierForDrops(Tier tier, BlockState bs) { return true; }
@@ -287,10 +304,21 @@ public class ForgeXplatImpl implements IXplatAbstractions {
     @Override public Registry<EvalSound> getEvalSoundRegistry() { return EVAL_SOUND_REGISTRY; }
 
     @Override public boolean isBreakingAllowed(ServerLevel world, BlockPos pos, BlockState state, @Nullable Player player) {
-        return true;
+        var actor = player != null ? player
+            : net.neoforged.neoforge.common.util.FakePlayerFactory.get(world, HEXCASTING);
+        var event = new net.neoforged.neoforge.event.level.BlockEvent.BreakEvent(world, pos, state, actor);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event);
+        return !event.isCanceled();
     }
     @Override public boolean isPlacingAllowed(ServerLevel world, BlockPos pos, ItemStack blockStack, @Nullable Player player) {
-        return true;
+        var actor = player != null ? player
+            : net.neoforged.neoforge.common.util.FakePlayerFactory.get(world, HEXCASTING);
+        var snapshot = java.util.List.of(
+            net.neoforged.neoforge.common.util.BlockSnapshot.create(world.dimension(), world, pos));
+        var placing = net.minecraft.world.level.block.Block.byItem(blockStack.getItem()).defaultBlockState();
+        var event = new net.neoforged.neoforge.event.level.BlockEvent.EntityPlaceEvent(snapshot.get(0), placing, actor);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event);
+        return !event.isCanceled();
     }
 
     @Override public PehkuiInterop.ApiAbstraction getPehkuiApi() {

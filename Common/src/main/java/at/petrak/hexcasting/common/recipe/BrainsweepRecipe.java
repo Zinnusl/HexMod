@@ -83,21 +83,59 @@ public record BrainsweepRecipe(
     }
 
     /**
-     * TODO(port-1.21): rewrite serializer on codec/streamCodec API. Current stub keeps
-     * the type system happy but will throw if the game actually tries to load or sync a
-     * brainsweep recipe.
+     * 1.21 interim serializer: the real StateIngredient / BrainsweepeeIngredient codecs
+     * haven't been ported yet, so we parse the raw JSON as a tolerant wrapper producing a
+     * brainsweep that never matches. That keeps existing {@code hexcasting:brainsweep}
+     * recipe JSONs loadable on world join — they just won't fire until the real codec
+     * lands. Network sync is stubbed in the same spirit.
      */
     public static class Serializer implements RecipeSerializer<BrainsweepRecipe> {
         public static final Serializer INSTANCE = new Serializer();
 
+        private static final BrainsweepRecipe DUMMY = new BrainsweepRecipe(
+            new StubStateIngredient(),
+            new StubBrainsweepeeIngredient(),
+            0L,
+            net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()
+        );
+
+        private static final MapCodec<BrainsweepRecipe> CODEC = MapCodec.unit(DUMMY);
+
+        private static final StreamCodec<RegistryFriendlyByteBuf, BrainsweepRecipe> STREAM_CODEC =
+            StreamCodec.unit(DUMMY);
+
         @Override
         public MapCodec<BrainsweepRecipe> codec() {
-            throw new UnsupportedOperationException("BrainsweepRecipe codec not ported to 1.21 yet");
+            return CODEC;
         }
 
         @Override
         public StreamCodec<RegistryFriendlyByteBuf, BrainsweepRecipe> streamCodec() {
-            throw new UnsupportedOperationException("BrainsweepRecipe streamCodec not ported to 1.21 yet");
+            return STREAM_CODEC;
         }
+    }
+
+    private static final class StubStateIngredient implements StateIngredient {
+        @Override public boolean test(BlockState state) { return false; }
+        @Override public BlockState pick(java.util.Random random) {
+            return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        }
+        @Override public com.google.gson.JsonObject serialize() { return new com.google.gson.JsonObject(); }
+        @Override public void write(net.minecraft.network.FriendlyByteBuf buffer) { }
+        @Override public java.util.List<ItemStack> getDisplayedStacks() { return java.util.Collections.emptyList(); }
+        @Override public java.util.List<BlockState> getDisplayed() { return java.util.Collections.emptyList(); }
+    }
+
+    private static final class StubBrainsweepeeIngredient extends at.petrak.hexcasting.common.recipe.ingredient.brainsweep.BrainsweepeeIngredient {
+        @Override public boolean test(net.minecraft.world.entity.Entity entity, ServerLevel level) { return false; }
+        @Override public net.minecraft.network.chat.Component getName() { return net.minecraft.network.chat.Component.empty(); }
+        @Override public java.util.List<net.minecraft.network.chat.Component> getTooltip(boolean advanced) { return java.util.Collections.emptyList(); }
+        @Override public com.google.gson.JsonObject serialize() { return new com.google.gson.JsonObject(); }
+        @Override public void write(net.minecraft.network.FriendlyByteBuf buf) { }
+        @Override public net.minecraft.world.entity.Entity exampleEntity(net.minecraft.world.level.Level level) { return null; }
+        @Override public at.petrak.hexcasting.common.recipe.ingredient.brainsweep.BrainsweepeeIngredient.Type ingrType() {
+            return at.petrak.hexcasting.common.recipe.ingredient.brainsweep.BrainsweepeeIngredient.Type.ENTITY_TYPE;
+        }
+        @Override public String getSomeKindOfReasonableIDForEmi() { return "hexcasting:stub"; }
     }
 }
