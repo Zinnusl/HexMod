@@ -1,10 +1,22 @@
 package at.petrak.hexcasting.common.recipe;
 
 import at.petrak.hexcasting.common.recipe.ingredient.StateIngredient;
+import at.petrak.hexcasting.common.recipe.ingredient.StateIngredientHelper;
 import at.petrak.hexcasting.common.recipe.ingredient.brainsweep.BrainsweepeeIngredient;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -83,26 +95,79 @@ public record BrainsweepRecipe(
     }
 
     /**
-     * 1.21 interim serializer: the real StateIngredient / BrainsweepeeIngredient codecs
-     * haven't been ported yet, so we parse the raw JSON as a tolerant wrapper producing a
-     * brainsweep that never matches. That keeps existing {@code hexcasting:brainsweep}
-     * recipe JSONs loadable on world join — they just won't fire until the real codec
-     * lands. Network sync is stubbed in the same spirit.
+     * Round-trip Codec<StateIngredient> that goes via JsonOps and delegates to
+     * StateIngredientHelper.deserialize / StateIngredient.serialize. Avoids duplicating
+     * the full sealed-subclass codec tree on the new API.
      */
+    public static final Codec<StateIngredient> STATE_INGREDIENT_CODEC =
+        Codec.PASSTHROUGH.flatXmap(
+            dyn -> {
+                try {
+                    JsonElement json = dyn.convert(JsonOps.INSTANCE).getValue();
+                    return DataResult.success(StateIngredientHelper.deserialize(json.getAsJsonObject()));
+                } catch (RuntimeException e) {
+                    return DataResult.error(e::getMessage);
+                }
+            },
+            ingr -> DataResult.success(new Dynamic<>(JsonOps.INSTANCE, ingr.serialize()))
+        );
+
+    public static final Codec<BrainsweepeeIngredient> BRAINSWEEPEE_INGREDIENT_CODEC =
+        Codec.PASSTHROUGH.flatXmap(
+            dyn -> {
+                try {
+                    JsonElement json = dyn.convert(JsonOps.INSTANCE).getValue();
+                    return DataResult.success(BrainsweepeeIngredient.deserialize(json.getAsJsonObject()));
+                } catch (RuntimeException e) {
+                    return DataResult.error(e::getMessage);
+                }
+            },
+            ingr -> DataResult.success(new Dynamic<>(JsonOps.INSTANCE, ingr.serialize()))
+        );
+
+    /** BlockState codec that matches the {@code {name: "...", properties: {...}}} shape of the recipe JSON. */
+    public static final Codec<BlockState> RESULT_BLOCK_STATE_CODEC = Codec.PASSTHROUGH.flatXmap(
+        dyn -> {
+            try {
+                JsonObject json = dyn.convert(JsonOps.INSTANCE).getValue().getAsJsonObject();
+                return DataResult.success(StateIngredientHelper.readBlockState(json));
+            } catch (RuntimeException e) {
+                return DataResult.error(e::getMessage);
+            }
+        },
+        state -> DataResult.success(new Dynamic<>(JsonOps.INSTANCE, StateIngredientHelper.serializeBlockState(state)))
+    );
+
     public static class Serializer implements RecipeSerializer<BrainsweepRecipe> {
         public static final Serializer INSTANCE = new Serializer();
 
-        private static final BrainsweepRecipe DUMMY = new BrainsweepRecipe(
-            new StubStateIngredient(),
-            new StubBrainsweepeeIngredient(),
-            0L,
-            net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()
-        );
-
-        private static final MapCodec<BrainsweepRecipe> CODEC = MapCodec.unit(DUMMY);
+        private static final MapCodec<BrainsweepRecipe> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
+            STATE_INGREDIENT_CODEC.fieldOf("blockIn").forGetter(BrainsweepRecipe::blockIn),
+            BRAINSWEEPEE_INGREDIENT_CODEC.fieldOf("entityIn").forGetter(BrainsweepRecipe::entityIn),
+            Codec.LONG.fieldOf("cost").forGetter(BrainsweepRecipe::mediaCost),
+            RESULT_BLOCK_STATE_CODEC.fieldOf("result").forGetter(BrainsweepRecipe::result)
+        ).apply(inst, BrainsweepRecipe::new));
 
         private static final StreamCodec<RegistryFriendlyByteBuf, BrainsweepRecipe> STREAM_CODEC =
-            StreamCodec.unit(DUMMY);
+            StreamCodec.of(
+                (buf, recipe) -> {
+                    // Reuse the JSON roundtrip for state + entity ingredients; primitive scalars go direct.
+                    ByteBufCodecs.STRING_UTF8.encode(buf, recipe.blockIn.serialize().toString());
+                    recipe.entityIn.wrapWrite(buf);
+                    buf.writeLong(recipe.mediaCost);
+                    // BlockState fits through the canonical id encoding.
+                    buf.writeVarInt(net.minecraft.world.level.block.Block.getId(recipe.result));
+                },
+                buf -> {
+                    String blockJson = ByteBufCodecs.STRING_UTF8.decode(buf);
+                    StateIngredient block = StateIngredientHelper.deserialize(
+                        com.google.gson.JsonParser.parseString(blockJson).getAsJsonObject());
+                    BrainsweepeeIngredient entity = BrainsweepeeIngredient.read(buf);
+                    long cost = buf.readLong();
+                    BlockState result = net.minecraft.world.level.block.Block.stateById(buf.readVarInt());
+                    return new BrainsweepRecipe(block, entity, cost, result);
+                }
+            );
 
         @Override
         public MapCodec<BrainsweepRecipe> codec() {
@@ -113,29 +178,5 @@ public record BrainsweepRecipe(
         public StreamCodec<RegistryFriendlyByteBuf, BrainsweepRecipe> streamCodec() {
             return STREAM_CODEC;
         }
-    }
-
-    private static final class StubStateIngredient implements StateIngredient {
-        @Override public boolean test(BlockState state) { return false; }
-        @Override public BlockState pick(java.util.Random random) {
-            return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
-        }
-        @Override public com.google.gson.JsonObject serialize() { return new com.google.gson.JsonObject(); }
-        @Override public void write(net.minecraft.network.FriendlyByteBuf buffer) { }
-        @Override public java.util.List<ItemStack> getDisplayedStacks() { return java.util.Collections.emptyList(); }
-        @Override public java.util.List<BlockState> getDisplayed() { return java.util.Collections.emptyList(); }
-    }
-
-    private static final class StubBrainsweepeeIngredient extends at.petrak.hexcasting.common.recipe.ingredient.brainsweep.BrainsweepeeIngredient {
-        @Override public boolean test(net.minecraft.world.entity.Entity entity, ServerLevel level) { return false; }
-        @Override public net.minecraft.network.chat.Component getName() { return net.minecraft.network.chat.Component.empty(); }
-        @Override public java.util.List<net.minecraft.network.chat.Component> getTooltip(boolean advanced) { return java.util.Collections.emptyList(); }
-        @Override public com.google.gson.JsonObject serialize() { return new com.google.gson.JsonObject(); }
-        @Override public void write(net.minecraft.network.FriendlyByteBuf buf) { }
-        @Override public net.minecraft.world.entity.Entity exampleEntity(net.minecraft.world.level.Level level) { return null; }
-        @Override public at.petrak.hexcasting.common.recipe.ingredient.brainsweep.BrainsweepeeIngredient.Type ingrType() {
-            return at.petrak.hexcasting.common.recipe.ingredient.brainsweep.BrainsweepeeIngredient.Type.ENTITY_TYPE;
-        }
-        @Override public String getSomeKindOfReasonableIDForEmi() { return "hexcasting:stub"; }
     }
 }
