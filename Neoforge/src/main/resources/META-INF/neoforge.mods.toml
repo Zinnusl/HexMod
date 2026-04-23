@@ -35,14 +35,14 @@ side = "BOTH"
 
 [[dependencies.hexcasting]]
 modId = "paucal"
-type = "required"
+type = "optional"
 versionRange = "[0.7.0,0.8.0)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.hexcasting]]
 modId = "patchouli"
-type = "required"
+type = "optional"
 versionRange = "[1.21-85,)"
 ordering = "NONE"
 side = "BOTH"
