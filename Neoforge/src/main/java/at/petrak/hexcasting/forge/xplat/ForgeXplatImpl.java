@@ -161,8 +161,13 @@ public class ForgeXplatImpl implements IXplatAbstractions {
             sendPacketToPlayer(sp, new at.petrak.hexcasting.forge.network.MsgAltioraUpdateAck(altiora));
         }
     }
-    @Override public void setStaffcastImage(ServerPlayer target, @Nullable CastingImage image) { }
-    @Override public void setPatterns(ServerPlayer target, List<ResolvedPattern> patterns) { }
+    @Override public void setStaffcastImage(ServerPlayer target, @Nullable CastingImage image) {
+        var tag = image == null ? new net.minecraft.nbt.CompoundTag() : image.serializeToNbt();
+        target.setData(at.petrak.hexcasting.forge.cap.HexAttachments.STAFFCAST_IMAGE.get(), tag);
+    }
+    @Override public void setPatterns(ServerPlayer target, List<ResolvedPattern> patterns) {
+        target.setData(at.petrak.hexcasting.forge.cap.HexAttachments.PATTERNS.get(), new java.util.ArrayList<>(patterns));
+    }
     @Override public @Nullable FlightAbility getFlight(ServerPlayer player) {
         return player.getData(at.petrak.hexcasting.forge.cap.HexAttachments.FLIGHT.get()).orElse(null);
     }
@@ -176,11 +181,19 @@ public class ForgeXplatImpl implements IXplatAbstractions {
         return player.getData(at.petrak.hexcasting.forge.cap.HexAttachments.SENTINEL.get()).orElse(null);
     }
     @Override public CastingVM getStaffcastVM(ServerPlayer player, InteractionHand hand) {
-        return new CastingVM(new CastingImage(),
-            new at.petrak.hexcasting.api.casting.eval.env.StaffCastEnv(player, hand));
+        var tag = player.getData(at.petrak.hexcasting.forge.cap.HexAttachments.STAFFCAST_IMAGE.get());
+        var img = tag.isEmpty()
+            ? new CastingImage()
+            : CastingImage.loadFromNbt(tag, player.serverLevel());
+        return new CastingVM(img, new at.petrak.hexcasting.api.casting.eval.env.StaffCastEnv(player, hand));
     }
-    @Override public List<ResolvedPattern> getPatternsSavedInUi(ServerPlayer player) { return Collections.emptyList(); }
-    @Override public void clearCastingData(ServerPlayer player) { }
+    @Override public List<ResolvedPattern> getPatternsSavedInUi(ServerPlayer player) {
+        return player.getData(at.petrak.hexcasting.forge.cap.HexAttachments.PATTERNS.get());
+    }
+    @Override public void clearCastingData(ServerPlayer player) {
+        setStaffcastImage(player, null);
+        setPatterns(player, List.of());
+    }
 
     // addl-data lookups — instance-dispatched via ADHolderAdapters.
     @Override public @Nullable ADMediaHolder findMediaHolder(ItemStack stack) {
@@ -190,7 +203,18 @@ public class ForgeXplatImpl implements IXplatAbstractions {
     @Override public @Nullable ADIotaHolder findDataHolder(ItemStack stack) {
         return at.petrak.hexcasting.forge.cap.adimpl.ADHolderAdapters.iota(stack);
     }
-    @Override public @Nullable ADIotaHolder findDataHolder(Entity entity) { return null; }
+    @Override public @Nullable ADIotaHolder findDataHolder(Entity entity) {
+        if (entity instanceof net.minecraft.world.entity.item.ItemEntity itemEntity) {
+            return new at.petrak.hexcasting.api.addldata.ItemDelegatingEntityIotaHolder.ToItemEntity(itemEntity);
+        }
+        if (entity instanceof net.minecraft.world.entity.decoration.ItemFrame itemFrame) {
+            return new at.petrak.hexcasting.api.addldata.ItemDelegatingEntityIotaHolder.ToItemFrame(itemFrame);
+        }
+        if (entity instanceof at.petrak.hexcasting.common.entities.EntityWallScroll wallScroll) {
+            return new at.petrak.hexcasting.api.addldata.ItemDelegatingEntityIotaHolder.ToWallScroll(wallScroll);
+        }
+        return null;
+    }
     @Override public @Nullable ADHexHolder findHexHolder(ItemStack stack) {
         return at.petrak.hexcasting.forge.cap.adimpl.ADHolderAdapters.hex(stack);
     }
@@ -198,9 +222,14 @@ public class ForgeXplatImpl implements IXplatAbstractions {
         return at.petrak.hexcasting.forge.cap.adimpl.ADHolderAdapters.variant(stack);
     }
 
-    // Colours
-    @Override public boolean isPigment(ItemStack stack) { return false; }
+    @Override public boolean isPigment(ItemStack stack) {
+        return stack.getItem() instanceof at.petrak.hexcasting.api.item.PigmentItem;
+    }
     @Override public ColorProvider getColorProvider(FrozenPigment pigment) {
+        var stack = pigment.item();
+        if (stack.getItem() instanceof at.petrak.hexcasting.api.item.PigmentItem pi) {
+            return pi.provideColor(stack, pigment.owner());
+        }
         return ColorProvider.MISSING;
     }
 
@@ -239,19 +268,8 @@ public class ForgeXplatImpl implements IXplatAbstractions {
     @Override public IXplatTags tags() { return TAGS_STUB; }
 
     @Override public LootItemCondition.Builder isShearsCondition() {
-        // TODO(port-1.21): CanToolPerformAction with ItemAbilities.SHEARS_DIG.
-        // LootItemCondition has multiple abstract methods on 1.21 (type + test); return a
-        // handcrafted always-false condition via a named class.
-        return () -> new LootItemCondition() {
-            @Override
-            public net.minecraft.world.level.storage.loot.predicates.LootItemConditionType getType() {
-                return net.minecraft.world.level.storage.loot.predicates.LootItemConditions.INVERTED;
-            }
-            @Override
-            public boolean test(net.minecraft.world.level.storage.loot.LootContext context) {
-                return false;
-            }
-        };
+        return net.neoforged.neoforge.common.loot.CanItemPerformAbility.canItemPerformAbility(
+            net.neoforged.neoforge.common.ItemAbilities.SHEARS_DIG);
     }
 
     @Override public String getModName(String namespace) {

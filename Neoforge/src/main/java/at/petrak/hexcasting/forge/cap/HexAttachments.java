@@ -110,4 +110,29 @@ public final class HexAttachments {
             .copyOnDeath()
             .build()
     );
+
+    // --- Staffcast image (stored as an opaque CastingImage NBT blob) --------
+
+    public static final Supplier<AttachmentType<net.minecraft.nbt.CompoundTag>> STAFFCAST_IMAGE = ATTACHMENTS.register(
+        "staffcast_image",
+        () -> AttachmentType.<net.minecraft.nbt.CompoundTag>builder(net.minecraft.nbt.CompoundTag::new)
+            .serialize(net.minecraft.nbt.CompoundTag.CODEC)
+            .build()
+    );
+
+    // --- Patterns saved in the spellcasting UI ------------------------------
+
+    public static final Codec<at.petrak.hexcasting.api.casting.eval.ResolvedPattern> RESOLVED_PATTERN_CODEC =
+        net.minecraft.nbt.CompoundTag.CODEC.xmap(
+            at.petrak.hexcasting.api.casting.eval.ResolvedPattern::fromNBT,
+            at.petrak.hexcasting.api.casting.eval.ResolvedPattern::serializeToNBT
+        );
+
+    public static final Supplier<AttachmentType<java.util.List<at.petrak.hexcasting.api.casting.eval.ResolvedPattern>>> PATTERNS = ATTACHMENTS.register(
+        "patterns",
+        () -> AttachmentType.<java.util.List<at.petrak.hexcasting.api.casting.eval.ResolvedPattern>>builder(
+                (Supplier<java.util.List<at.petrak.hexcasting.api.casting.eval.ResolvedPattern>>) java.util.ArrayList::new)
+            .serialize(RESOLVED_PATTERN_CODEC.listOf())
+            .build()
+    );
 }
