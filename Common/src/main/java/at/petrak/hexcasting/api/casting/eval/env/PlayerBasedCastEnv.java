@@ -73,7 +73,13 @@ public abstract class PlayerBasedCastEnv extends CastingEnvironment {
     @Override
     protected double getCostModifier(PatternShapeMatch match) {
         ResourceLocation loc = actionKey(match);
-        if (isOfTag(IXplatAbstractions.INSTANCE.getActionRegistry(), loc, HexTags.Actions.CANNOT_MODIFY_COST)) {
+        // actionKey is @Nullable — it returns null for PatternShapeMatch.Nothing
+        // and similar unknown-pattern paths. isOfTag is Kotlin-side with a
+        // non-null `loc` parameter, so passing null NPEs. When we don't know
+        // which action this is, treat it as "no modifier" (equivalent to
+        // CANNOT_MODIFY_COST).
+        if (loc == null
+            || isOfTag(IXplatAbstractions.INSTANCE.getActionRegistry(), loc, HexTags.Actions.CANNOT_MODIFY_COST)) {
             return 1.0;
         } else {
             return this.caster.getAttributeValue(HexAttributes.holder(HexAttributes.MEDIA_CONSUMPTION_MODIFIER));
