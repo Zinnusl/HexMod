@@ -136,6 +136,8 @@ public class ForgeHexInitializer {
             HexComposting.setup();
             HexStrippables.init();
             AkashicTreeGrower.init();
+            at.petrak.hexcasting.common.misc.RegisterMisc.register();
+            at.petrak.hexcasting.api.mod.HexStatistics.register();
             HexInterop.init();
         }));
 
@@ -189,14 +191,26 @@ public class ForgeHexInitializer {
                     new at.petrak.hexcasting.forge.network.MsgAltioraUpdateAck(xplat.getAltiora(sp)));
             });
 
-        // Per-tick bookkeeping: PlayerPositionRecorder samples each player's position
-        // at world end-of-tick so OpPlayerMotion / rage flight velocity ops can read
-        // last-tick delta instead of zero.
+        // Per-tick server bookkeeping: position recorder, flight time-left, altiora grace.
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
             (net.neoforged.neoforge.event.tick.LevelTickEvent.Post evt) -> {
                 if (evt.getLevel() instanceof net.minecraft.server.level.ServerLevel sl) {
                     at.petrak.hexcasting.common.misc.PlayerPositionRecorder.updateAllPlayers(sl);
+                    at.petrak.hexcasting.common.casting.actions.spells.OpFlight.tickAllPlayers(sl);
+                    at.petrak.hexcasting.common.casting.actions.spells.great.OpAltiora.INSTANCE.checkAllPlayers(sl);
                 }
             });
+
+        // Per-world pattern manifest runs once at server start so great patterns get a
+        // fresh world-specific hash seed.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
+            (net.neoforged.neoforge.event.server.ServerStartedEvent evt) ->
+                at.petrak.hexcasting.common.casting.PatternRegistryManifest.processRegistry(
+                    evt.getServer().overworld()));
+
+        // /hexcasting subcommand tree (brainsweep, list-perworld-patterns, recalc, texture-dump).
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
+            (net.neoforged.neoforge.event.RegisterCommandsEvent evt) ->
+                at.petrak.hexcasting.common.lib.HexCommands.register(evt.getDispatcher()));
     }
 }
