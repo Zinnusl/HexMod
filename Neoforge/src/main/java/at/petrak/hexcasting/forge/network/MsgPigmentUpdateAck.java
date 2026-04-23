@@ -7,6 +7,8 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 import static at.petrak.hexcasting.api.HexAPI.modLoc;
@@ -16,6 +18,13 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
  */
 public record MsgPigmentUpdateAck(FrozenPigment update) implements IMessage {
     public static final ResourceLocation ID = modLoc("color");
+    public static final CustomPacketPayload.Type<MsgPigmentUpdateAck> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgPigmentUpdateAck> CODEC = IMessage.streamCodec(MsgPigmentUpdateAck::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgPigmentUpdateAck> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {

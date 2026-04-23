@@ -8,6 +8,8 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Optional;
@@ -19,6 +21,13 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
  */
 public record MsgNewSpellPatternS2C(ExecutionClientView info, int index) implements IMessage {
     public static final ResourceLocation ID = modLoc("pat_sc");
+    public static final CustomPacketPayload.Type<MsgNewSpellPatternS2C> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgNewSpellPatternS2C> CODEC = IMessage.streamCodec(MsgNewSpellPatternS2C::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgNewSpellPatternS2C> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {

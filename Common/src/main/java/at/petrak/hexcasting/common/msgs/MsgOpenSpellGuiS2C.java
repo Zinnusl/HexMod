@@ -7,6 +7,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 
@@ -24,6 +26,13 @@ public record MsgOpenSpellGuiS2C(InteractionHand hand, List<ResolvedPattern> pat
 )
     implements IMessage {
     public static final ResourceLocation ID = modLoc("cgui");
+    public static final CustomPacketPayload.Type<MsgOpenSpellGuiS2C> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgOpenSpellGuiS2C> CODEC = IMessage.streamCodec(MsgOpenSpellGuiS2C::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgOpenSpellGuiS2C> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {

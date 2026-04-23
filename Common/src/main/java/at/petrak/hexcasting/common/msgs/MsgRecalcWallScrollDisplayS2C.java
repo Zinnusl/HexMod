@@ -5,6 +5,8 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 import static at.petrak.hexcasting.api.HexAPI.modLoc;
@@ -14,6 +16,13 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
  */
 public record MsgRecalcWallScrollDisplayS2C(int entityId, boolean showStrokeOrder) implements IMessage {
     public static final ResourceLocation ID = modLoc("redoscroll");
+    public static final CustomPacketPayload.Type<MsgRecalcWallScrollDisplayS2C> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgRecalcWallScrollDisplayS2C> CODEC = IMessage.streamCodec(MsgRecalcWallScrollDisplayS2C::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgRecalcWallScrollDisplayS2C> type() {
+        return TYPE;
+    }
 
     public static MsgRecalcWallScrollDisplayS2C deserialize(RegistryFriendlyByteBuf buffer) {
         var buf = buffer;

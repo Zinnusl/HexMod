@@ -8,6 +8,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
@@ -21,6 +23,13 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
  */
 public record MsgSentinelStatusUpdateAck(@Nullable Sentinel update) implements IMessage {
     public static final ResourceLocation ID = modLoc("sntnl");
+    public static final CustomPacketPayload.Type<MsgSentinelStatusUpdateAck> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgSentinelStatusUpdateAck> CODEC = IMessage.streamCodec(MsgSentinelStatusUpdateAck::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgSentinelStatusUpdateAck> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {

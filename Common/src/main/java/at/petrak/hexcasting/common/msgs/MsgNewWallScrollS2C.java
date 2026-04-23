@@ -7,6 +7,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -17,6 +19,13 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
 public record MsgNewWallScrollS2C(ClientboundAddEntityPacket inner, BlockPos pos, Direction dir, ItemStack scrollItem,
                                   boolean showsStrokeOrder, int blockSize) implements IMessage {
     public static final ResourceLocation ID = modLoc("wallscr");
+    public static final CustomPacketPayload.Type<MsgNewWallScrollS2C> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgNewWallScrollS2C> CODEC = IMessage.streamCodec(MsgNewWallScrollS2C::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgNewWallScrollS2C> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {

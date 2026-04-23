@@ -7,6 +7,8 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,6 +16,13 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
 
 public record MsgAltioraUpdateAck(@Nullable AltioraAbility altiora) implements IMessage {
     public static final ResourceLocation ID = modLoc("altiora");
+    public static final CustomPacketPayload.Type<MsgAltioraUpdateAck> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgAltioraUpdateAck> CODEC = IMessage.streamCodec(MsgAltioraUpdateAck::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgAltioraUpdateAck> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {

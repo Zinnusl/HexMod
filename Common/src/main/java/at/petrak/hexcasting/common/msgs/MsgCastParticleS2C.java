@@ -8,6 +8,8 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -21,6 +23,13 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
  */
 public record MsgCastParticleS2C(ParticleSpray spray, FrozenPigment colorizer) implements IMessage {
     public static final ResourceLocation ID = modLoc("cprtcl");
+    public static final CustomPacketPayload.Type<MsgCastParticleS2C> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgCastParticleS2C> CODEC = IMessage.streamCodec(MsgCastParticleS2C::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgCastParticleS2C> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {

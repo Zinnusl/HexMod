@@ -12,6 +12,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,6 +30,13 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
 public record MsgShiftScrollC2S(double mainHandDelta, double offHandDelta, boolean isCtrl, boolean invertSpellbook,
                                 boolean invertAbacus) implements IMessage {
     public static final ResourceLocation ID = modLoc("scroll");
+    public static final CustomPacketPayload.Type<MsgShiftScrollC2S> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgShiftScrollC2S> CODEC = IMessage.streamCodec(MsgShiftScrollC2S::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgShiftScrollC2S> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {

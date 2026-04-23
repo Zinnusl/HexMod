@@ -6,6 +6,8 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
@@ -17,6 +19,13 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
  */
 public record MsgBrainsweepAck(int target) implements IMessage {
     public static final ResourceLocation ID = modLoc("sweep");
+    public static final CustomPacketPayload.Type<MsgBrainsweepAck> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgBrainsweepAck> CODEC = IMessage.streamCodec(MsgBrainsweepAck::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgBrainsweepAck> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {

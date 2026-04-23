@@ -26,7 +26,7 @@ import net.minecraft.world.phys.AABB;
 public class ForgeClientXplatImpl implements IClientXplatAbstractions {
     @Override
     public void sendPacketToServer(IMessage packet) {
-        // TODO(port-1.21): route via PacketDistributor once IMessage is a CustomPacketPayload.
+        at.petrak.hexcasting.forge.network.ForgePacketHandler.getNetwork().sendToServer(packet);
     }
 
     @Override

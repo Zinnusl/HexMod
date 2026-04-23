@@ -106,12 +106,22 @@ public class ForgeXplatImpl implements IXplatAbstractions {
     @Override public boolean isModPresent(String id) { return ModList.get().isLoaded(id); }
     @Override public void initPlatformSpecific() { }
 
-    // Packets — real impl requires CustomPacketPayload rewrite of each message.
-    @Override public void sendPacketToPlayer(ServerPlayer target, IMessage packet) { }
-    @Override public void sendPacketNear(Vec3 pos, double radius, ServerLevel dimension, IMessage packet) { }
-    @Override public void sendPacketTracking(Entity entity, IMessage packet) { }
+    @Override public void sendPacketToPlayer(ServerPlayer target, IMessage packet) {
+        at.petrak.hexcasting.forge.network.ForgePacketHandler.getNetwork().sendTo(target, packet);
+    }
+    @Override public void sendPacketNear(Vec3 pos, double radius, ServerLevel dimension, IMessage packet) {
+        for (ServerPlayer sp : dimension.players()) {
+            if (sp.distanceToSqr(pos.x, pos.y, pos.z) <= radius * radius) {
+                at.petrak.hexcasting.forge.network.ForgePacketHandler.getNetwork().sendTo(sp, packet);
+            }
+        }
+    }
+    @Override public void sendPacketTracking(Entity entity, IMessage packet) {
+        at.petrak.hexcasting.forge.network.ForgePacketHandler.getNetwork().sendToTrackingEntity(entity, packet);
+    }
     @Override public Packet<ClientGamePacketListener> toVanillaClientboundPacket(IMessage message) {
-        throw new UnsupportedOperationException("TODO(port-1.21): bind CustomPacketPayload per IMessage");
+        return (Packet<ClientGamePacketListener>) (Packet<?>)
+            new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(message);
     }
 
     // Capabilities (brainsweep / flight / sentinel / pigment / altiora / staff VM / patterns).

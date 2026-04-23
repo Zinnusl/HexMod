@@ -6,6 +6,8 @@ import at.petrak.hexcasting.api.casting.math.HexPattern;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,6 +26,13 @@ public record MsgNewSpellPatternC2S(InteractionHand handUsed, HexPattern pattern
                                     List<ResolvedPattern> resolvedPatterns)
     implements IMessage {
     public static final ResourceLocation ID = modLoc("pat_cs");
+    public static final CustomPacketPayload.Type<MsgNewSpellPatternC2S> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgNewSpellPatternC2S> CODEC = IMessage.streamCodec(MsgNewSpellPatternC2S::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgNewSpellPatternC2S> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {
