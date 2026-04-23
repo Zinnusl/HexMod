@@ -145,6 +145,13 @@ public class ForgeHexInitializer {
 
         // CustomPacketPayload registration for every hex Msg*.
         ForgePacketHandler.register(modBus);
+
+        // Client-side listener registration: tick counter, render overlays,
+        // shift-scroll. Without this call, ClientTickCounter.getTotal() never
+        // advances and the pattern wiggle animation freezes.
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+            ForgeHexClientInitializer.register(modBus);
+        }
     }
 
     private static <T> void bindIfMatching(
