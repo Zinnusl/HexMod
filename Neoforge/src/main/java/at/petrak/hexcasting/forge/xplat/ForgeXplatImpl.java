@@ -124,20 +124,57 @@ public class ForgeXplatImpl implements IXplatAbstractions {
             new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(message);
     }
 
-    // Capabilities (brainsweep / flight / sentinel / pigment / altiora / staff VM / patterns).
-    // 1.21 needs BlockCapability/ItemCapability/EntityCapability wiring + attached-data sync.
-    @Override public void setBrainsweepAddlData(Mob mob) { }
-    @Override public boolean isBrainswept(Mob mob) { return false; }
-    @Override public @Nullable FrozenPigment setPigment(Player target, @Nullable FrozenPigment colorizer) { return null; }
-    @Override public void setSentinel(Player target, @Nullable Sentinel sentinel) { }
-    @Override public void setFlight(ServerPlayer target, @Nullable FlightAbility flight) { }
-    @Override public void setAltiora(Player target, @Nullable AltioraAbility altiora) { }
+    // Player/mob attachments — backed by HexAttachments; sync to client via existing Ack messages.
+    @Override public void setBrainsweepAddlData(Mob mob) {
+        mob.setData(at.petrak.hexcasting.forge.cap.HexAttachments.BRAINSWEPT.get(), Boolean.TRUE);
+        if (mob.level() instanceof ServerLevel sl) {
+            var ack = at.petrak.hexcasting.forge.network.MsgBrainsweepAck.of(mob);
+            for (ServerPlayer sp : sl.players()) {
+                sendPacketToPlayer(sp, ack);
+            }
+        }
+    }
+    @Override public boolean isBrainswept(Mob mob) {
+        return mob.getData(at.petrak.hexcasting.forge.cap.HexAttachments.BRAINSWEPT.get());
+    }
+    @Override public @Nullable FrozenPigment setPigment(Player target, @Nullable FrozenPigment colorizer) {
+        var att = at.petrak.hexcasting.forge.cap.HexAttachments.PIGMENT.get();
+        var old = target.getData(att);
+        target.setData(att, colorizer != null ? colorizer : FrozenPigment.DEFAULT.get());
+        if (target instanceof ServerPlayer sp) {
+            sendPacketToPlayer(sp, new at.petrak.hexcasting.forge.network.MsgPigmentUpdateAck(target.getData(att)));
+        }
+        return old;
+    }
+    @Override public void setSentinel(Player target, @Nullable Sentinel sentinel) {
+        target.setData(at.petrak.hexcasting.forge.cap.HexAttachments.SENTINEL.get(), java.util.Optional.ofNullable(sentinel));
+        if (target instanceof ServerPlayer sp) {
+            sendPacketToPlayer(sp, new at.petrak.hexcasting.forge.network.MsgSentinelStatusUpdateAck(sentinel));
+        }
+    }
+    @Override public void setFlight(ServerPlayer target, @Nullable FlightAbility flight) {
+        target.setData(at.petrak.hexcasting.forge.cap.HexAttachments.FLIGHT.get(), java.util.Optional.ofNullable(flight));
+    }
+    @Override public void setAltiora(Player target, @Nullable AltioraAbility altiora) {
+        target.setData(at.petrak.hexcasting.forge.cap.HexAttachments.ALTIORA.get(), java.util.Optional.ofNullable(altiora));
+        if (target instanceof ServerPlayer sp) {
+            sendPacketToPlayer(sp, new at.petrak.hexcasting.forge.network.MsgAltioraUpdateAck(altiora));
+        }
+    }
     @Override public void setStaffcastImage(ServerPlayer target, @Nullable CastingImage image) { }
     @Override public void setPatterns(ServerPlayer target, List<ResolvedPattern> patterns) { }
-    @Override public @Nullable FlightAbility getFlight(ServerPlayer player) { return null; }
-    @Override public @Nullable AltioraAbility getAltiora(Player player) { return null; }
-    @Override public FrozenPigment getPigment(Player player) { return FrozenPigment.DEFAULT.get(); }
-    @Override public @Nullable Sentinel getSentinel(Player player) { return null; }
+    @Override public @Nullable FlightAbility getFlight(ServerPlayer player) {
+        return player.getData(at.petrak.hexcasting.forge.cap.HexAttachments.FLIGHT.get()).orElse(null);
+    }
+    @Override public @Nullable AltioraAbility getAltiora(Player player) {
+        return player.getData(at.petrak.hexcasting.forge.cap.HexAttachments.ALTIORA.get()).orElse(null);
+    }
+    @Override public FrozenPigment getPigment(Player player) {
+        return player.getData(at.petrak.hexcasting.forge.cap.HexAttachments.PIGMENT.get());
+    }
+    @Override public @Nullable Sentinel getSentinel(Player player) {
+        return player.getData(at.petrak.hexcasting.forge.cap.HexAttachments.SENTINEL.get()).orElse(null);
+    }
     @Override public CastingVM getStaffcastVM(ServerPlayer player, InteractionHand hand) {
         return new CastingVM(new CastingImage(),
             new at.petrak.hexcasting.api.casting.eval.env.StaffCastEnv(player, hand));

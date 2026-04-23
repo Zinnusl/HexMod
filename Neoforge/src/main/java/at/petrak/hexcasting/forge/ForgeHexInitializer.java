@@ -16,6 +16,7 @@ import at.petrak.hexcasting.common.lib.HexPotions;
 import at.petrak.hexcasting.common.lib.HexSounds;
 import at.petrak.hexcasting.common.misc.AkashicTreeGrower;
 import at.petrak.hexcasting.common.recipe.HexRecipeStuffRegistry;
+import at.petrak.hexcasting.forge.cap.HexAttachments;
 import at.petrak.hexcasting.forge.lib.ForgeHexArgumentTypeRegistry;
 import at.petrak.hexcasting.forge.lib.ForgeHexLootMods;
 import at.petrak.hexcasting.forge.network.ForgePacketHandler;
@@ -112,6 +113,9 @@ public class ForgeHexInitializer {
         // Forge-side DeferredRegisters (argument types, loot modifier serializers).
         ForgeHexArgumentTypeRegistry.ARGUMENT_TYPES.register(modBus);
         ForgeHexLootMods.REGISTRY.register(modBus);
+
+        // Player/mob attachments (pigment, sentinel, altiora, flight, brainswept).
+        HexAttachments.ATTACHMENTS.register(modBus);
 
         // CustomPacketPayload registration for every hex Msg*.
         ForgePacketHandler.register(modBus);
