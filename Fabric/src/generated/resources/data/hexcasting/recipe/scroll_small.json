@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "A": "hexcasting:amethyst_dust",
-    "P": "minecraft:paper"
+    "A": {
+      "item": "hexcasting:amethyst_dust"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
   },
   "pattern": [
     " A",

@@ -3,10 +3,16 @@
   "category": "misc",
   "key": {
     "B": [
-      "minecraft:copper_ingot",
-      "#c:copper_ingots"
+      {
+        "item": "minecraft:copper_ingot"
+      },
+      {
+        "tag": "c:copper_ingots"
+      }
     ],
-    "T": "hexcasting:charged_amethyst"
+    "T": {
+      "item": "hexcasting:charged_amethyst"
+    }
   },
   "pattern": [
     "T",

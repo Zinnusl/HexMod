@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": "hexcasting:amethyst_bricks"
+    "#": {
+      "item": "hexcasting:amethyst_bricks"
+    }
   },
   "pattern": [
     "##",

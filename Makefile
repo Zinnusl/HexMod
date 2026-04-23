@@ -11,6 +11,7 @@
 #   make clean      # gradle clean
 #   make run        # launch dev client (runClient)
 #   make verify     # print target jar path, modpack dir, existing hex jars
+#   make smoketest  # boot dedicated server with only hex jar, check for errors
 #
 # Override paths on the command line if needed, e.g.
 #   make deploy INSTANCE=/d/otherpack
@@ -29,16 +30,18 @@ GRADLEW  := sh ./gradlew
 # Excludes -dev, -sources, -shadow, -all variants produced by loom/shadow.
 JAR_PATTERN := hexcasting-neoforge-*.jar
 
-.PHONY: all build deploy clean run verify help
+.PHONY: all build deploy clean run verify help smoketest smoketest-clean
 
 all: deploy
 
 help:
-	@echo "make build    -- gradle :Neoforge:build"
-	@echo "make deploy   -- build then copy jar to $(MODS_DIR)"
-	@echo "make clean    -- gradle clean"
-	@echo "make run      -- :Neoforge:runClient (dev)"
-	@echo "make verify   -- show resolved paths and existing hex jars in target"
+	@echo "make build           -- gradle :Neoforge:build"
+	@echo "make deploy          -- build then copy jar to $(MODS_DIR)"
+	@echo "make clean           -- gradle clean"
+	@echo "make run             -- :Neoforge:runClient (dev)"
+	@echo "make verify          -- show resolved paths and existing hex jars in target"
+	@echo "make smoketest       -- boot dedicated server with only hex jar, check for errors"
+	@echo "make smoketest-clean -- wipe build/smoketest (forces fresh server install)"
 
 build:
 	$(GRADLEW) :Neoforge:build
@@ -70,3 +73,13 @@ deploy: build
 	rm -f "$(MODS_DIR)"/hexcasting-*.jar; \
 	cp "$$jar" "$(MODS_DIR)/"; \
 	echo "Deployed $$(basename $$jar) -> $(MODS_DIR)"
+
+# Boot a dedicated server with only the hex jar, wait for "Done (", /stop,
+# verify no mod-loading exceptions. Installs NeoForge server into
+# build/smoketest/ on first run and reuses it thereafter.
+smoketest: build
+	@bash scripts/smoketest.sh
+
+smoketest-clean:
+	@rm -rf build/smoketest
+	@echo "build/smoketest removed"

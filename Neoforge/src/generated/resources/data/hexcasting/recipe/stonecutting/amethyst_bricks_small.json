@@ -1,6 +1,10 @@
 {
   "type": "minecraft:stonecutting",
-  "count": 1,
-  "ingredient": "#hexcasting:amethyst_blocks",
-  "result": "hexcasting:amethyst_bricks_small"
+  "ingredient": {
+    "tag": "hexcasting:amethyst_blocks"
+  },
+  "result": {
+    "id": "hexcasting:amethyst_bricks_small",
+    "count": 1
+  }
 }

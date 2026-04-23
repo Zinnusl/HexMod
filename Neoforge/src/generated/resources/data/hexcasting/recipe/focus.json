@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "A": "hexcasting:charged_amethyst",
-    "G": "#c:dusts/glowstone",
-    "L": "#c:leather",
-    "P": "minecraft:paper"
+    "A": {
+      "item": "hexcasting:charged_amethyst"
+    },
+    "G": {
+      "tag": "c:dusts/glowstone"
+    },
+    "L": {
+      "tag": "c:leather"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
   },
   "pattern": [
     "GLG",

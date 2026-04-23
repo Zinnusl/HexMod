@@ -1,7 +1,9 @@
 {
   "type": "farmersdelight:cutting",
   "ingredients": [
-    "hexcasting:edified_log_citrine"
+    {
+      "item": "hexcasting:edified_log_citrine"
+    }
   ],
   "result": [
     "hexcasting:stripped_edified_log",

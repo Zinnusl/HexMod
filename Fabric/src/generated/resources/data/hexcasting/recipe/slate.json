@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "A": "hexcasting:amethyst_dust",
-    "S": "minecraft:deepslate"
+    "A": {
+      "item": "hexcasting:amethyst_dust"
+    },
+    "S": {
+      "item": "minecraft:deepslate"
+    }
   },
   "pattern": [
     " A ",

@@ -9,7 +9,9 @@
   ],
   "type": "create:crushing",
   "ingredients": [
-    "minecraft:amethyst_block"
+    {
+      "item": "minecraft:amethyst_block"
+    }
   ],
   "processingTime": 150,
   "results": [

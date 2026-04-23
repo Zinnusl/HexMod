@@ -3,18 +3,40 @@
   "category": "building",
   "ingredients": [
     [
-      "minecraft:brown_dye",
-      "#c:brown_dye",
-      "#c:brown_dyes"
+      {
+        "item": "minecraft:brown_dye"
+      },
+      {
+        "tag": "c:brown_dye"
+      },
+      {
+        "tag": "c:brown_dyes"
+      }
     ],
-    "hexcasting:scroll_paper",
-    "hexcasting:scroll_paper",
-    "hexcasting:scroll_paper",
-    "hexcasting:scroll_paper",
-    "hexcasting:scroll_paper",
-    "hexcasting:scroll_paper",
-    "hexcasting:scroll_paper",
-    "hexcasting:scroll_paper"
+    {
+      "item": "hexcasting:scroll_paper"
+    },
+    {
+      "item": "hexcasting:scroll_paper"
+    },
+    {
+      "item": "hexcasting:scroll_paper"
+    },
+    {
+      "item": "hexcasting:scroll_paper"
+    },
+    {
+      "item": "hexcasting:scroll_paper"
+    },
+    {
+      "item": "hexcasting:scroll_paper"
+    },
+    {
+      "item": "hexcasting:scroll_paper"
+    },
+    {
+      "item": "hexcasting:scroll_paper"
+    }
   ],
   "result": {
     "id": "hexcasting:ancient_scroll_paper",

@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": "hexcasting:quenched_allay_bricks"
+    "#": {
+      "item": "hexcasting:quenched_allay_bricks"
+    }
   },
   "pattern": [
     "##",

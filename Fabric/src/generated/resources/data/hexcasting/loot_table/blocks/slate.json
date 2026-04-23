@@ -7,12 +7,12 @@
           "type": "minecraft:item",
           "functions": [
             {
-              "function": "minecraft:copy_nbt",
+              "function": "minecraft:copy_custom_data",
               "ops": [
                 {
                   "op": "replace",
                   "source": "pattern",
-                  "target": "BlockEntityTag.pattern"
+                  "target": "pattern"
                 }
               ],
               "source": "block_entity"

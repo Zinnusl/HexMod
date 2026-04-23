@@ -9,7 +9,9 @@
   ],
   "type": "create:crushing",
   "ingredients": [
-    "minecraft:amethyst_shard"
+    {
+      "item": "minecraft:amethyst_shard"
+    }
   ],
   "processingTime": 150,
   "results": [

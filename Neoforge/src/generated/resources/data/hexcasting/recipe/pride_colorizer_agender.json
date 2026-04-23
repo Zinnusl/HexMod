@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": "minecraft:glass",
-    "D": "hexcasting:amethyst_dust"
+    "C": {
+      "item": "minecraft:glass"
+    },
+    "D": {
+      "item": "hexcasting:amethyst_dust"
+    }
   },
   "pattern": [
     " D ",

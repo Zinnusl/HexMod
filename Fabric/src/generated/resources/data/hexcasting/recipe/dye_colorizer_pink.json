@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": "minecraft:pink_dye",
-    "D": "hexcasting:amethyst_dust"
+    "C": {
+      "item": "minecraft:pink_dye"
+    },
+    "D": {
+      "item": "hexcasting:amethyst_dust"
+    }
   },
   "pattern": [
     " D ",

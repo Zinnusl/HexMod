@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": "minecraft:wheat_seeds",
-    "D": "hexcasting:amethyst_dust"
+    "C": {
+      "item": "minecraft:wheat_seeds"
+    },
+    "D": {
+      "item": "hexcasting:amethyst_dust"
+    }
   },
   "pattern": [
     " D ",

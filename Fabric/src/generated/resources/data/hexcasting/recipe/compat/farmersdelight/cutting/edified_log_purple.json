@@ -9,7 +9,9 @@
   ],
   "type": "farmersdelight:cutting",
   "ingredients": [
-    "hexcasting:edified_log_purple"
+    {
+      "item": "hexcasting:edified_log_purple"
+    }
   ],
   "result": [
     "hexcasting:stripped_edified_log",

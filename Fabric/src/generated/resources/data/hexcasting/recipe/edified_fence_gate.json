@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "S": "minecraft:stick",
-    "W": "#hexcasting:edified_planks"
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "W": {
+      "tag": "hexcasting:edified_planks"
+    }
   },
   "pattern": [
     "SWS",

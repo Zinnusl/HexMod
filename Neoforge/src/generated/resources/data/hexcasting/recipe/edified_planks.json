@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "#hexcasting:edified_logs"
+    {
+      "tag": "hexcasting:edified_logs"
+    }
   ],
   "result": {
     "id": "hexcasting:edified_planks",

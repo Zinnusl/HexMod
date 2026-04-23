@@ -108,11 +108,29 @@ public class ForgeHexInitializer {
             bindIfMatching(evt, Registries.MOB_EFFECT, HexMobEffects::register);
             bindIfMatching(evt, Registries.POTION, HexPotions::register);
             bindIfMatching(evt, Registries.PARTICLE_TYPE, HexParticles::registerParticles);
+            bindIfMatching(evt, Registries.LOOT_FUNCTION_TYPE,
+                at.petrak.hexcasting.common.lib.HexLootFunctions::registerSerializers);
+
+            // Hex's own custom registries — populated through the DeferredRegisters on
+            // ForgeXplatImpl. RegisterEvent fires for these too once the DR attaches to
+            // the mod bus (earlier in initRegistries).
+            bindIfMatching(evt, at.petrak.hexcasting.common.lib.HexRegistries.ACTION,
+                at.petrak.hexcasting.common.lib.hex.HexActions::register);
+            bindIfMatching(evt, at.petrak.hexcasting.common.lib.HexRegistries.IOTA_TYPE,
+                at.petrak.hexcasting.common.lib.hex.HexIotaTypes::registerTypes);
+            bindIfMatching(evt, at.petrak.hexcasting.common.lib.HexRegistries.SPECIAL_HANDLER,
+                at.petrak.hexcasting.common.lib.hex.HexSpecialHandlers::register);
+            bindIfMatching(evt, at.petrak.hexcasting.common.lib.HexRegistries.ARITHMETIC,
+                at.petrak.hexcasting.common.lib.hex.HexArithmetics::register);
+            bindIfMatching(evt, at.petrak.hexcasting.common.lib.HexRegistries.EVAL_SOUND,
+                at.petrak.hexcasting.common.lib.hex.HexEvalSounds::register);
         });
 
-        // Forge-side DeferredRegisters (argument types, loot modifier serializers).
+        // Forge-side DeferredRegisters (argument types, loot modifier serializers,
+        // custom ingredient types).
         ForgeHexArgumentTypeRegistry.ARGUMENT_TYPES.register(modBus);
         ForgeHexLootMods.REGISTRY.register(modBus);
+        at.petrak.hexcasting.forge.recipe.ForgeHexIngredients.bootstrap(modBus);
 
         // Player/mob attachments (pigment, sentinel, altiora, flight, brainswept).
         HexAttachments.ATTACHMENTS.register(modBus);
@@ -137,10 +155,20 @@ public class ForgeHexInitializer {
             HexStrippables.init();
             AkashicTreeGrower.init();
             at.petrak.hexcasting.common.misc.RegisterMisc.register();
-            at.petrak.hexcasting.api.mod.HexStatistics.register();
-            at.petrak.hexcasting.api.advancements.HexAdvancementTriggers.registerTriggers();
             HexInterop.init();
         }));
+
+        // Custom stats + advancement triggers both write into BuiltInRegistries slots
+        // (CUSTOM_STAT, TRIGGER_TYPE). On 1.21 those registries freeze before
+        // FMLCommonSetupEvent, so run the registrations while RegisterEvent is still
+        // dispatching. The registry-key gate is cosmetic — RegisterEvent fires once
+        // per registry, and every load runs this exactly when CUSTOM_STAT matches.
+        modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent evt) -> {
+            if (evt.getRegistryKey().equals(net.minecraft.core.registries.Registries.CUSTOM_STAT)) {
+                at.petrak.hexcasting.api.mod.HexStatistics.register();
+                at.petrak.hexcasting.api.advancements.HexAdvancementTriggers.registerTriggers();
+            }
+        });
 
         // RegisterBrewingRecipesEvent fires on the main (NeoForge) event bus at world
         // load. The builder it carries is the PotionBrewing.Builder vanilla uses to

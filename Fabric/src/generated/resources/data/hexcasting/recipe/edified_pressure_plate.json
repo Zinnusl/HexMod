@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "W": "#hexcasting:edified_planks"
+    "W": {
+      "tag": "hexcasting:edified_planks"
+    }
   },
   "pattern": [
     "WW"

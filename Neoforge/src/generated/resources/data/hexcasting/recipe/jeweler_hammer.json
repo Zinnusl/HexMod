@@ -2,12 +2,22 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "A": "minecraft:amethyst_shard",
-    "I": "#c:ingots/iron",
-    "N": "#c:nuggets/iron",
+    "A": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
     "S": [
-      "minecraft:stick",
-      "#c:rods/wooden"
+      {
+        "item": "minecraft:stick"
+      },
+      {
+        "tag": "c:rods/wooden"
+      }
     ]
   },
   "pattern": [

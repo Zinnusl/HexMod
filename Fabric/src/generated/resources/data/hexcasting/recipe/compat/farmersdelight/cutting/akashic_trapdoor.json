@@ -9,7 +9,9 @@
   ],
   "type": "farmersdelight:cutting",
   "ingredients": [
-    "hexcasting:edified_trapdoor"
+    {
+      "item": "hexcasting:edified_trapdoor"
+    }
   ],
   "result": [
     "hexcasting:edified_planks"
