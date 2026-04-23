@@ -1,7 +1,6 @@
 package at.petrak.hexcasting.interop.patchouli;
 
 import com.google.gson.annotations.SerializedName;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import vazkii.patchouli.api.IComponentRenderContext;
@@ -19,7 +18,7 @@ public class CustomComponentTooltip implements ICustomComponent {
     IVariable tooltipReference;
 
     transient IVariable tooltipVar;
-    transient List<Component> tooltip;
+    transient List<Component> tooltip = new ArrayList<>();
 
     transient int x, y;
 
@@ -27,7 +26,6 @@ public class CustomComponentTooltip implements ICustomComponent {
     public void build(int componentX, int componentY, int pageNum) {
         x = componentX;
         y = componentY;
-        tooltip = new ArrayList<>();
     }
 
     @Override
@@ -37,16 +35,16 @@ public class CustomComponentTooltip implements ICustomComponent {
         }
     }
 
-    // 1.21 Patchouli: onVariablesAvailable grew a HolderLookup.Provider arg for registry-aware reads.
+    // 1.21 Patchouli: onVariablesAvailable grew a HolderLookup.Provider arg for registry-aware
+    // reads. The tooltip list is JSON Components on the page; deserialize each through
+    // IVariable.as(Component.class) to match the pre-port behavior. Entries are NOT plain
+    // strings — asString would throw UnsupportedOperationException on JsonObject.
     @Override
     public void onVariablesAvailable(UnaryOperator<IVariable> lookup, net.minecraft.core.HolderLookup.Provider provider) {
-        tooltipVar = lookup.apply(tooltipReference);
-        // Resolve the tooltip list now that we have both the lookup and a registry provider.
-        // Each entry becomes a translated Component; empty/absent vars leave the tooltip empty.
-        for (var line : tooltipVar.asListOrSingleton(provider)) {
-            String raw = line.asString();
-            if (raw == null || raw.isEmpty()) continue;
-            tooltip.add(Component.translatable(raw).withStyle(ChatFormatting.GRAY));
+        this.tooltipVar = lookup.apply(tooltipReference);
+        this.tooltip = new ArrayList<>();
+        for (IVariable s : this.tooltipVar.asListOrSingleton(provider)) {
+            this.tooltip.add(s.as(Component.class));
         }
     }
 }
