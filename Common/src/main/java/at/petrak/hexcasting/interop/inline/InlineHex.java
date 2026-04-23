@@ -1,9 +1,10 @@
 package at.petrak.hexcasting.interop.inline;
 
-import com.samsthenerd.inline.api.InlineAPI;
-
+/**
+ * Inline mod isn't available for 1.21 yet. The class is kept as a no-op shell so
+ * callers in HexInterop continue to compile; remove the stub once inline ships.
+ */
 public class InlineHex {
-    public static void init(){
-        InlineAPI.INSTANCE.addDataType(InlinePatternData.InlinePatternDataType.INSTANCE);
+    public static void init() {
     }
 }

@@ -88,10 +88,12 @@ public class ConjureParticle extends TextureSheetParticle {
         }
     }
 
-    // https://github.com/VazkiiMods/Botania/blob/db85d778ab23f44c11181209319066d1f04a9e3d/Xplat/src/main/java/vazkii/botania/client/fx/FXWisp.java
+    // 1.21: ParticleRenderType was simplified to a single begin(Tesselator, TextureManager)
+    // returning BufferBuilder. The old begin/end pair is gone — state teardown happens at
+    // the particle engine's batch flush.
     private record ConjureRenderType() implements ParticleRenderType {
         @Override
-        public void begin(BufferBuilder buf, TextureManager texMan) {
+        public BufferBuilder begin(Tesselator tesselator, TextureManager texMan) {
             Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
             RenderSystem.depthMask(false);
             RenderSystem.enableBlend();
@@ -100,18 +102,8 @@ public class ConjureParticle extends TextureSheetParticle {
             RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
             var tex = texMan.getTexture(TextureAtlas.LOCATION_PARTICLES);
             IClientXplatAbstractions.INSTANCE.setFilterSave(tex, true, false);
-            buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
             RenderSystem.enableDepthTest();
-        }
-
-        @Override
-        public void end(Tesselator tess) {
-            tess.end();
-            IClientXplatAbstractions.INSTANCE.restoreLastFilter(
-                Minecraft.getInstance().getTextureManager().getTexture(TextureAtlas.LOCATION_PARTICLES)
-            );
-            RenderSystem.disableBlend();
-            RenderSystem.depthMask(true);
+            return tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
         }
 
         @Override

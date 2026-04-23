@@ -1,15 +1,16 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        maven {
-            name = 'Fabric'
-            url = 'https://maven.fabricmc.net/'
-        }
+//        maven {
+//            name = 'Fabric'
+//            url = 'https://maven.fabricmc.net/'
+//        }
         maven {
             name = 'Sponge Snapshots'
             url = 'https://repo.spongepowered.org/repository/maven-public/'
         }
         maven { url 'https://maven.blamejared.com' }
+        maven { url "https://maven.architectury.dev/" }
     }
 
     plugins {
@@ -17,5 +18,9 @@ pluginManagement {
     }
 }
 
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
 rootProject.name = 'Hex Casting'
-include("Common", "Fabric", "Forge")
+include("Common", "Fabric", "Neoforge")

@@ -10,7 +10,6 @@ import at.petrak.hexcasting.common.entities.EntityWallScroll;
 import at.petrak.hexcasting.common.lib.hex.HexIotaTypes;
 import at.petrak.hexcasting.common.misc.PatternTooltip;
 import at.petrak.hexcasting.common.casting.PatternRegistryManifest;
-import at.petrak.hexcasting.interop.inline.InlinePatternData;
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -119,10 +118,12 @@ public class ItemScroll extends Item implements IotaHolderItem {
         scrollStack.setCount(1);
         var scrollEntity = new EntityWallScroll(level, posInFront, direction, scrollStack, false, this.blockSize);
 
-        // i guess
-        var stackTag = itemstack.getTag();
-        if (stackTag != null) {
-            EntityType.updateCustomEntityTag(level, player, scrollEntity, stackTag);
+        // 1.21: ItemStack no longer has getTag(); EntityType.updateCustomEntityTag now
+        // accepts a CustomData component. The custom-entity-name decorator is the only
+        // thing that still fires here.
+        var customData = itemstack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if (customData != null) {
+            EntityType.updateCustomEntityTag(level, player, scrollEntity, customData);
         }
 
         if (scrollEntity.survives()) {
@@ -156,7 +157,7 @@ public class ItemScroll extends Item implements IotaHolderItem {
             var patternLabel = Component.literal("");
             if (compound != null) {
                 var pattern = HexPattern.fromNBT(compound);
-                patternLabel = Component.literal(": ").append(new InlinePatternData(pattern).asText(false));
+                patternLabel = Component.literal(": ").append(PatternIota.displayNonInline(pattern));
             }
             return Component.translatable(descID).append(patternLabel);
         } else {
@@ -192,8 +193,7 @@ public class ItemScroll extends Item implements IotaHolderItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents,
-        TooltipFlag pIsAdvanced) {
+    public void appendHoverText(ItemStack pStack, net.minecraft.world.item.Item.TooltipContext ctx, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
         if (NBTHelper.getBoolean(pStack, TAG_NEEDS_PURCHASE)) {
             var needsPurchase = Component.translatable("hexcasting.tooltip.scroll.needs_purchase");
             pTooltipComponents.add(needsPurchase.withStyle(ChatFormatting.GRAY));

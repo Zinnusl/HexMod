@@ -1,12 +1,10 @@
 package at.petrak.hexcasting.common.entities;
 
 import at.petrak.hexcasting.api.casting.math.HexPattern;
-import at.petrak.hexcasting.api.utils.HexUtils;
 import at.petrak.hexcasting.api.utils.NBTHelper;
 import at.petrak.hexcasting.common.items.storage.ItemScroll;
 import at.petrak.hexcasting.common.lib.HexItems;
 import at.petrak.hexcasting.common.lib.HexSounds;
-import at.petrak.hexcasting.common.msgs.MsgNewWallScrollS2C;
 import at.petrak.hexcasting.common.msgs.MsgRecalcWallScrollDisplayS2C;
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import net.minecraft.core.BlockPos;
@@ -18,6 +16,7 @@ import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -30,6 +29,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,6 +37,14 @@ public class EntityWallScroll extends HangingEntity {
     private static final EntityDataAccessor<Boolean> SHOWS_STROKE_ORDER = SynchedEntityData.defineId(
         EntityWallScroll.class,
         EntityDataSerializers.BOOLEAN);
+    // 1.21: sync scroll + blockSize via SynchedEntityData so the client sees them on
+    // first spawn instead of needing a bundled MsgNewWallScrollS2C payload.
+    private static final EntityDataAccessor<ItemStack> SCROLL_ITEM = SynchedEntityData.defineId(
+        EntityWallScroll.class,
+        EntityDataSerializers.ITEM_STACK);
+    private static final EntityDataAccessor<Integer> BLOCK_SIZE = SynchedEntityData.defineId(
+        EntityWallScroll.class,
+        EntityDataSerializers.INT);
 
     public ItemStack scroll;
     @Nullable
@@ -46,6 +54,7 @@ public class EntityWallScroll extends HangingEntity {
 
     public EntityWallScroll(EntityType<? extends EntityWallScroll> type, Level world) {
         super(type, world);
+        this.scroll = ItemStack.EMPTY;
     }
 
     public EntityWallScroll(Level world, BlockPos pos, Direction dir, ItemStack scroll, boolean showStrokeOrder,
@@ -55,6 +64,8 @@ public class EntityWallScroll extends HangingEntity {
         this.blockSize = blockSize;
 
         this.entityData.set(SHOWS_STROKE_ORDER, showStrokeOrder);
+        this.entityData.set(SCROLL_ITEM, scroll.copy());
+        this.entityData.set(BLOCK_SIZE, blockSize);
         this.scroll = scroll;
         this.recalculateDisplay();
         this.recalculateBoundingBox();
@@ -71,10 +82,26 @@ public class EntityWallScroll extends HangingEntity {
         }
     }
 
+    // 1.21: defineSynchedData takes a Builder instead of mutating SynchedEntityData directly.
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(SHOWS_STROKE_ORDER, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(SHOWS_STROKE_ORDER, false);
+        builder.define(SCROLL_ITEM, ItemStack.EMPTY);
+        builder.define(BLOCK_SIZE, 1);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (this.level().isClientSide) {
+            if (SCROLL_ITEM.equals(key)) {
+                this.scroll = this.entityData.get(SCROLL_ITEM);
+                this.recalculateDisplay();
+            } else if (BLOCK_SIZE.equals(key)) {
+                this.blockSize = this.entityData.get(BLOCK_SIZE);
+                this.recalculateBoundingBox();
+            }
+        }
     }
 
     public boolean getShowsStrokeOrder() {
@@ -85,15 +112,22 @@ public class EntityWallScroll extends HangingEntity {
         this.entityData.set(SHOWS_STROKE_ORDER, b);
     }
 
+    // 1.21: calculateBoundingBox is abstract on HangingEntity and must be overridden.
+    // Scroll blocks a rectangular area proportional to blockSize.
     @Override
-    public int getWidth() {
-        return 16 * blockSize;
+    protected AABB calculateBoundingBox(BlockPos pos, Direction dir) {
+        double half = this.blockSize / 2.0;
+        Vec3 center = Vec3.atCenterOf(pos);
+        double xOff = dir.getStepX() == 0 ? half : 0.0625;
+        double zOff = dir.getStepZ() == 0 ? half : 0.0625;
+        return new AABB(
+            center.x - xOff, center.y - half, center.z - zOff,
+            center.x + xOff, center.y + half, center.z + zOff
+        );
     }
 
-    @Override
-    public int getHeight() {
-        return 16 * blockSize;
-    }
+    // 1.21: HangingEntity no longer has getWidth/getHeight; bounding box comes from
+    // calculateBoundingBox above.
 
     @Override
     public void dropItem(@Nullable Entity pBrokenEntity) {
@@ -138,10 +172,8 @@ public class EntityWallScroll extends HangingEntity {
     }
 
     @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket() {
-        return IXplatAbstractions.INSTANCE.toVanillaClientboundPacket(
-            new MsgNewWallScrollS2C(new ClientboundAddEntityPacket(this),
-                pos, direction, scroll, getShowsStrokeOrder(), blockSize));
+    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity serverEntity) {
+        return new ClientboundAddEntityPacket(this, serverEntity);
     }
 
     public void readSpawnData(BlockPos pos, Direction dir, ItemStack scrollItem,
@@ -160,7 +192,10 @@ public class EntityWallScroll extends HangingEntity {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         tag.putByte("direction", (byte) this.direction.ordinal());
-        tag.put("scroll", HexUtils.serializeToNBT(this.scroll));
+        // 1.21: ItemStack.save takes a HolderLookup.Provider and returns the resulting Tag.
+        if (!this.scroll.isEmpty()) {
+            tag.put("scroll", this.scroll.save(this.registryAccess()));
+        }
         tag.putBoolean("showsStrokeOrder", this.getShowsStrokeOrder());
         tag.putInt("blockSize", this.blockSize);
         super.addAdditionalSaveData(tag);
@@ -169,7 +204,7 @@ public class EntityWallScroll extends HangingEntity {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         this.direction = Direction.values()[tag.getByte("direction")];
-        this.scroll = ItemStack.of(tag.getCompound("scroll"));
+        this.scroll = ItemStack.parseOptional(this.registryAccess(), tag.getCompound("scroll"));
         this.blockSize = tag.getInt("blockSize");
 
         this.setDirection(this.direction);
@@ -181,19 +216,9 @@ public class EntityWallScroll extends HangingEntity {
         super.readAdditionalSaveData(tag);
     }
 
-    @Override
-    public void moveTo(double pX, double pY, double pZ, float pYaw, float pPitch) {
-        this.setPos(pX, pY, pZ);
-    }
+    // 1.21: HangingEntity's moveTo/lerpTo overrides are no longer needed — BlockAttachedEntity
+    // pins position itself. Default superclass behaviour is correct for wall scrolls.
 
-    @Override
-    public void lerpTo(double pX, double pY, double pZ, float pYaw, float pPitch, int pPosRotationIncrements,
-        boolean pTeleport) {
-        BlockPos blockpos = this.pos.offset((int) (pX - this.getX()), (int) (pY - this.getY()), (int) (pZ - this.getZ()));
-        this.setPos(blockpos.getX(), blockpos.getY(), blockpos.getZ());
-    }
-
-    @Nullable
     @Override
     public ItemStack getPickResult() {
         return this.scroll.copy();

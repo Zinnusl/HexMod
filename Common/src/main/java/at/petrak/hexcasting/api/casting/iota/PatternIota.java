@@ -19,7 +19,6 @@ import at.petrak.hexcasting.api.utils.HexUtils;
 import at.petrak.hexcasting.common.casting.PatternRegistryManifest;
 import at.petrak.hexcasting.common.lib.hex.HexEvalSounds;
 import at.petrak.hexcasting.common.lib.hex.HexIotaTypes;
-import at.petrak.hexcasting.interop.inline.InlinePatternData;
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -164,8 +163,9 @@ public class PatternIota extends Iota {
     }
 
     public static Component display(HexPattern pat) {
-        Component text = (new InlinePatternData(pat)).asText(true);
-        return text.copy().withStyle(text.getStyle().applyTo(Style.EMPTY.withColor(ChatFormatting.WHITE)));
+        // Without the Inline mod (no 1.21 build yet) there's no rich pattern rendering;
+        // fall back to the existing plain-text form.
+        return displayNonInline(pat);
     }
 
     // keep around just in case it's needed.

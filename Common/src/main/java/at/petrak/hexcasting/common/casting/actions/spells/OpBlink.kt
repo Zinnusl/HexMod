@@ -20,8 +20,8 @@ import kotlin.math.roundToLong
 object OpBlink : SpellAction {
     override val argc = 2
     override fun execute(
-            args: List<Iota>,
-            env: CastingEnvironment
+        args: List<Iota>,
+        env: CastingEnvironment
     ): SpellAction.Result {
         val target = args.getEntity(0, argc)
         val delta = args.getDouble(1, argc)

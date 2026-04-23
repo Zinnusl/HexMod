@@ -53,7 +53,7 @@ public class ItemAbacus extends Item implements IotaHolderItem {
         var stack = player.getItemInHand(hand);
         if (player.isShiftKeyDown()) {
             double oldNum = NBTHelper.getDouble(stack, TAG_VALUE);
-            stack.removeTagKey(TAG_VALUE);
+            at.petrak.hexcasting.api.utils.NBTHelper.remove(stack, TAG_VALUE);
 
             player.playSound(HexSounds.ABACUS_SHAKE, 1f, 1f);
 
@@ -70,8 +70,7 @@ public class ItemAbacus extends Item implements IotaHolderItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents,
-        TooltipFlag pIsAdvanced) {
+    public void appendHoverText(ItemStack pStack, net.minecraft.world.item.Item.TooltipContext ctx, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
         IotaHolderItem.appendHoverText(this, pStack, pTooltipComponents, pIsAdvanced);
     }
 }

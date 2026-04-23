@@ -127,10 +127,12 @@ public class WallScrollRenderer extends EntityRenderer<EntityWallScroll> {
     private static void vertex(Matrix4f mat, Matrix3f normal, int light, VertexConsumer verts, float x, float y,
                                float z, float u,
                                float v, float nx, float ny, float nz) {
-        verts.vertex(mat, x, y, z)
-                .color(0xffffffff)
-                .uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light)
-                .normal(normal, nx, ny, nz)
-                .endVertex();
+        // 1.21: vertex API uses add/setX chain, no endVertex.
+        verts.addVertex(mat, x, y, z)
+                .setColor(0xffffffff)
+                .setUv(u, v)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(light)
+                .setNormal(nx, ny, nz);
     }
 }

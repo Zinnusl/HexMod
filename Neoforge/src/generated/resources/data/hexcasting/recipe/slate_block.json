@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": {
+      "item": "minecraft:deepslate"
+    },
+    "D": {
+      "item": "minecraft:deepslate"
+    },
+    "I": {
+      "item": "hexcasting:amethyst_dust"
+    }
+  },
+  "pattern": [
+    "DCD",
+    "CIC",
+    "DCD"
+  ],
+  "result": {
+    "id": "hexcasting:slate_block",
+    "count": 8
+  },
+  "show_notification": true
+}

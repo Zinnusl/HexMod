@@ -1,0 +1,216 @@
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
+
+// FIXME: update dependencies/versions before releasing 0.12
+pkSubproj {
+    pkPublish = true
+    curseforgeJar = jar.archiveFile
+    curseforgeDependencies([
+        "paucal",
+        "patchouli",
+        "caelus",
+        "inline",
+    ])
+    modrinthJar = jar.archiveFile
+    modrinthDependencies([
+        "paucal:HyBiJPtT", // 0.6.0-forge
+        "patchouli:1.20.1-80-forge",
+        "caelus:3.1.0+1.20",
+        "inline:1.20.1-1.0.1-forge",
+    ])
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentNeoForge.extendsFrom common
+
+    // Files in this configuration will be bundled into your mod using the Shadow plugin.
+    // Don't use the `shadow` configuration from the plugin itself as it's meant for excluding files.
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+repositories {
+    mavenCentral()
+
+    // If you have mod jar dependencies in ./libs, you can declare them as a repository like so:
+    flatDir {
+        dir 'libs'
+    }
+
+    maven { url "https://maven.neoforged.net/releases/" }
+    // paucal and patchi
+    maven { url = 'https://maven.blamejared.com' }
+    // caelus elytra
+    maven { url = "https://maven.theillusivec4.top" }
+    // pehkui
+    maven { url = "https://jitpack.io" }
+    // EMI
+    maven { url = "https://maven.terraformersmc.com/releases/" }
+
+    maven {
+        name = 'Kotlin for Forge'
+        url = 'https://thedarkcolour.github.io/KotlinForForge/'
+        content { includeGroup "thedarkcolour" }
+    }
+
+    maven { url "https://maven.shedaniel.me/" }
+    // accessories
+    maven { url 'https://maven.wispforest.io/releases' }
+    // sinytra connector or something?? accessories needs it
+    maven { url 'https://maven.su5ed.dev/releases' }
+}
+
+dependencies {
+    neoForge "net.neoforged:neoforge:${neoforgeVersion}"
+    common(project(path: ':Common', configuration: 'namedElements')) { transitive false }
+    shadowBundle(project(path: ':Common', configuration: 'transformProductionNeoForge')) { transitive false }
+    implementation "thedarkcolour:kotlinforforge:$kotlinForForgeVersion"
+
+    // === MANDATORY DEPS ===
+
+    implementation "at.petra-k:paucal:$paucalVersion+$minecraftVersion-common"
+    implementation "vazkii.patchouli:Patchouli:1.21-$patchouliVersion-NEOFORGE-SNAPSHOT"
+    implementation "top.theillusivec4.caelus:caelus-forge:$caelusVersion"
+//    implementation("com.samsthenerd.inline:inline-forge:$minecraftVersion-$inlineVersion")
+    // needed for inline to run
+    runtimeOnly("me.shedaniel.cloth:cloth-config-forge:$clothConfigVersion")
+
+    // === OPTIONAL DEPS ===
+
+    compileOnly "dev.emi:emi-neoforge:${emiVersion}:api"
+    runtimeOnly "dev.emi:emi-neoforge:${emiVersion}"
+    modImplementation "io.wispforest:accessories-neoforge:$accessoriesVersion"
+
+    api("com.github.Virtuoel:Pehkui:${pehkuiVersion}-1.21-neoforge")
+
+    // "Required due to issues with JIJ dependency resolving in arch or something"
+    // https://github.com/wisp-forest/accessories
+    forgeRuntimeLibrary("io.wispforest:endec:0.1.8")
+    forgeRuntimeLibrary("io.wispforest.endec:gson:0.1.5")
+    forgeRuntimeLibrary("io.wispforest.endec:netty:0.1.4")
+}
+
+def generatedResources = project(":Common").file("src/generated/resources")
+
+loom {
+    runs {
+        create("forgeXplatDatagen") {
+            data()
+            name "Forge Xplat Datagen"
+
+            vmArg("-Dhexcasting.xplat_datagen")
+
+            programArgs "--all", "--mod", project.modID
+            programArgs "--output", generatedResources.absolutePath
+            programArgs "--existing", file("src/main/resources").absolutePath
+            programArgs "--existing", generatedResources.absolutePath
+        }
+
+        // NeoForge GameTest runner — boots a dedicated server, executes every
+        // @GameTest method registered against the hexcasting namespace, and
+        // exits 0 on all-pass / non-zero on any failure. Driven via
+        // `make gametest`.
+        create("gameTest") {
+            server()
+            name "NeoForge GameTest"
+            vmArg "-Dneoforge.gameTestServer=true"
+            property "neoforge.enabledGameTestNamespaces", "hexcasting"
+        }
+    }
+}
+
+//mixin {
+//    add sourceSets.main, "hexcasting.mixins.refmap.json"
+//    config "hexplat.mixins.json"
+//    config "hexcasting_forge.mixins.json"
+//}
+
+compileJava {
+    source(project(":Common").sourceSets.main.allSource)
+}
+compileKotlin {
+    source(project(":Common").sourceSets.main.kotlin)
+}
+compileTestKotlin {
+    source(project(":Common").sourceSets.main.kotlin)
+}
+
+sourceSets {
+    main.resources.srcDirs += ['src/generated/resources', '../Common/src/generated/resources']
+    main.kotlin.srcDirs += 'src/main/java'
+    test.kotlin.srcDirs += 'src/main/java'
+    // The Neoforge platform glue hasn't been fully ported yet. Datagen, JEI (being
+    // dropped for EMI), Curios interop (superseded by Accessories), the old Capability
+    // system (replaced by BlockCapability / ItemCapability / EntityCapability in
+    // 1.20.5+), the platform-abstraction bridge (xplat) which depends on caps+curios,
+    // the legacy SimpleChannel packet handler, the Forge recipe/ingredient codecs,
+    // global loot modifiers, and the Forge-specific lib plumbing are all excluded
+    // until the core Neoforge infrastructure is rebuilt.
+    main.java.exclude 'at/petrak/hexcasting/forge/datagen/**'
+    // forge/interop/jei deleted — hex is migrating to EMI (already wired as a compileOnly
+    // dep). A 1.21 EMI plugin needs to be written at src/main/java/at/petrak/hexcasting/
+    // forge/interop/emi/ (mirroring the Fabric-side plugin).
+    // forge/interop/curios deleted — superseded by Accessories (wispforest). A 1.21
+    // Accessories plugin is the replacement for the old CuriosApiInterop surface.
+    // forge/cap deleted — the whole 1.20.1 Capability.Provider / @CapabilityInject /
+    // LazyOptional surface was replaced by BlockCapability / ItemCapability /
+    // EntityCapability + AttachmentType in 1.20.5+. Reimplementation must rebuild
+    // brainsweep / pigment / altiora / sentinel / flight / addl-data lookups on
+    // NeoForge 1.21's attached-data API before any of those features work.
+    // forge/xplat: ForgeXplatImpl rewritten as a minimal stub that provides a working
+    // IXplatAbstractions binding. Capability-backed features (brainsweep, pigment,
+    // flight, sentinel, altiora, addl-data) are all no-ops until caps are ported.
+    // ForgeClientXplatImpl still excluded.
+    // main.java.exclude 'at/petrak/hexcasting/forge/xplat/**'
+    // ForgeClientXplatImpl: re-enabled. Cap-dependent ClientCastingStack lookup returns
+    // an empty stack; texture filter-save/restore is a one-way set now.
+    // main.java.exclude 'at/petrak/hexcasting/forge/xplat/ForgeClientXplatImpl.java'
+    // forge/network ported onto CustomPacketPayload-compatible signatures (Msg*Ack
+    // serialize/deserialize on RegistryFriendlyByteBuf); ForgePacketHandler is a stub
+    // until RegisterPayloadHandlersEvent wiring lands.
+    // main.java.exclude 'at/petrak/hexcasting/forge/network/**'
+    // forge/recipe ported on the 1.21 Ingredient codec surface.
+    // main.java.exclude 'at/petrak/hexcasting/forge/recipe/**'
+    // forge/loot re-enabled after LootModifier MapCodec port.
+    // main.java.exclude 'at/petrak/hexcasting/forge/loot/**'
+    // forge/lib ported to NeoForge 1.21 DeferredRegister API.
+    // main.java.exclude 'at/petrak/hexcasting/forge/lib/**'
+    // forge/mixin: removed dead mixins (ForgeMixinBlockColors / ForgeMixinItemColors
+    // tied to excluded ForgeHexClientInitializer; ForgeMixinTagsProvider targeted a
+    // TagsProvider field that no longer exists on 1.21; ForgeMixinCursedRecipeSerializerBase
+    // relied on the removed Recipe#getId/setRegistryName path). ForgeAccessorBuiltInRegistries
+    // remains — its @Invoker targets still resolve.
+    // main.java.exclude 'at/petrak/hexcasting/forge/mixin/**'
+    // ForgeHexInitializer: skeleton @Mod class rewritten — registers DeferredRegisters,
+    // wires configs, runs the cross-platform init. Capability/packet/Curios event plumbing
+    // still TODO.
+    // main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexInitializer.java'
+    // ForgeHexClientInitializer: skeleton re-enabled (particles, shaders, renderers,
+    // tooltip components, layer definitions, scroll listener). Color providers and
+    // AltioraLayer skin registration still TODO.
+    // main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexClientInitializer.java'
+    // ForgeHexConfig ported — isValidResourceLocation → tryParse.
+    // main.java.exclude 'at/petrak/hexcasting/forge/ForgeHexConfig.java'
+}
+
+processResources {
+    from project(":Common").sourceSets.main.resources
+    inputs.property "version", project.version
+
+    filesMatching("mods.toml") {
+        expand "version": project.version
+    }
+}
+
+// 1.21 NeoForge builds skip reobf — mod jars ship in Mojang mappings.
+// jar.finalizedBy('reobfJar')

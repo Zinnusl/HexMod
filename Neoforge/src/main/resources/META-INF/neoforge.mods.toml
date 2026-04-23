@@ -1,0 +1,69 @@
+modLoader = "kotlinforforge"
+loaderVersion = "[5,)"
+license = "MIT"
+
+issueTrackerURL = "https://github.com/gamma-delta/HexMod/issues"
+
+[[mods]]
+modId = "hexcasting"
+version = "${file.jarVersion}"
+displayName = "Hex Casting"
+displayURL = "https://github.com/gamma-delta/HexMod"
+logoFile = "logo.png"
+credits = "Falkory for textures; Wiresegal for lots of polish; Alwinfy for visual effects, proofreading, and code help; Kra3tor for sound effects; naj77 for the nice logo; and all of my wonderful patrons for supporting me!"
+authors = "petrak@ (aka gamma-delta)"
+description = "Cast powerful Hexes on the fly by drawing patterns with a staff."
+
+[[mixins]]
+config = "hexplat.mixins.json"
+[[mixins]]
+config = "hexcasting_forge.mixins.json"
+
+[[dependencies.hexcasting]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,22)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.hexcasting]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.hexcasting]]
+modId = "paucal"
+type = "optional"
+versionRange = "[0.7.0,0.8.0)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.hexcasting]]
+modId = "patchouli"
+type = "optional"
+versionRange = "[1.21-85,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.hexcasting]]
+modId = "accessories"
+type = "optional"
+versionRange = "[1.1.0-beta.16,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.hexcasting]]
+modId = "emi"
+type = "optional"
+versionRange = "[1.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.hexcasting]]
+modId = "pehkui"
+type = "optional"
+versionRange = "[3.8,)"
+ordering = "NONE"
+side = "BOTH"

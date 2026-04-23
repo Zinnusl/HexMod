@@ -9,8 +9,9 @@ import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BlockHexPressurePlate extends PressurePlateBlock {
-    public BlockHexPressurePlate(Sensitivity $$0, Properties $$1) {
-        super($$0, $$1, HexBlockSetTypes.EDIFIED_WOOD);
+    // 1.21: PressurePlateBlock dropped the Sensitivity enum; behaviour subclasses handle it.
+    public BlockHexPressurePlate(Properties properties) {
+        super(HexBlockSetTypes.EDIFIED_WOOD, properties);
     }
 
 

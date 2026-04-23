@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": {
+      "tag": "hexcasting:edified_planks"
+    },
+    "D": {
+      "tag": "hexcasting:edified_planks"
+    }
+  },
+  "pattern": [
+    "DCD",
+    "C C",
+    "DCD"
+  ],
+  "result": {
+    "id": "hexcasting:edified_panel",
+    "count": 8
+  },
+  "show_notification": true
+}

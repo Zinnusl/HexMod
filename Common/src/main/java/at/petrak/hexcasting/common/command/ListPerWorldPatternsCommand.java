@@ -103,13 +103,13 @@ public class ListPerWorldPatternsCommand {
                     tag.put(ItemScroll.TAG_PATTERN, pat.serializeToNBT());
 
                     var stack = new ItemStack(HexItems.SCROLL_LARGE);
-                    stack.setTag(tag);
+                    stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag));
 
                     for (var player : targets) {
                         var stackEntity = player.drop(stack, false);
                         if (stackEntity != null) {
                             stackEntity.setNoPickUpDelay();
-                            stackEntity.setThrower(player.getUUID());
+                            stackEntity.setThrower(player);
                         }
 
                         count++;
@@ -137,7 +137,7 @@ public class ListPerWorldPatternsCommand {
             tag.put(ItemScroll.TAG_PATTERN, pat.serializeToNBT());
 
             var stack = new ItemStack(HexItems.SCROLL_LARGE);
-            stack.setTag(tag);
+            stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag));
 
             source.sendSuccess(() ->
                 Component.translatable(
@@ -151,7 +151,7 @@ public class ListPerWorldPatternsCommand {
                 var stackEntity = player.drop(stack, false);
                 if (stackEntity != null) {
                     stackEntity.setNoPickUpDelay();
-                    stackEntity.setThrower(player.getUUID());
+                    stackEntity.setThrower(player);
                 }
             }
 

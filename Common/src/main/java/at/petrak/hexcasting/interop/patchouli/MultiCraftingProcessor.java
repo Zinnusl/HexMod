@@ -24,6 +24,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 1.21 notes: IVariableProvider.get and IVariable.asStream now both take a
+ * HolderLookup.Provider; ShapedRecipe.getResultItem also wants the provider.
+ * We cache the level's registryAccess() at setup time so process() can reuse it.
+ */
 public class MultiCraftingProcessor implements IComponentProcessor {
     private List<CraftingRecipe> recipes;
     private boolean shapeless = true;
@@ -32,10 +37,11 @@ public class MultiCraftingProcessor implements IComponentProcessor {
 
     @Override
     public void setup(Level level, IVariableProvider vars) {
-        List<String> names = vars.get("recipes").asStream().map(IVariable::asString).collect(Collectors.toList());
+        var regs = level.registryAccess();
+        List<String> names = vars.get("recipes", regs).asStream(regs).map(IVariable::asString).collect(Collectors.toList());
         this.recipes = new ArrayList<>();
         for (String name : names) {
-            CraftingRecipe recipe = PatchouliUtils.getRecipe(RecipeType.CRAFTING, new ResourceLocation(name));
+            CraftingRecipe recipe = PatchouliUtils.getRecipe(RecipeType.CRAFTING, ResourceLocation.parse(name));
             if (recipe != null) {
                 recipes.add(recipe);
                 if (shapeless) {
@@ -59,9 +65,10 @@ public class MultiCraftingProcessor implements IComponentProcessor {
         if (recipes.isEmpty()) {
             return null;
         }
+        var regs = level.registryAccess();
         if (key.equals("heading")) {
             if (!hasCustomHeading) {
-                return IVariable.from(recipes.get(0).getResultItem(level.registryAccess()).getHoverName());
+                return IVariable.from(recipes.get(0).getResultItem(regs).getHoverName(), regs);
             }
             return null;
         }
@@ -89,7 +96,11 @@ public class MultiCraftingProcessor implements IComponentProcessor {
         }
         if (key.equals("output")) {
             return IVariable.wrapList(
-                recipes.stream().map(recipe -> recipe.getResultItem(level.registryAccess())).map(IVariable::from).collect(Collectors.toList()));
+                recipes.stream()
+                    .map(recipe -> recipe.getResultItem(regs))
+                    .map(stack -> IVariable.from(stack, regs))
+                    .collect(Collectors.toList()),
+                regs);
         }
         if (key.equals("shapeless")) {
             return IVariable.wrap(shapeless);

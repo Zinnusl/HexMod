@@ -59,7 +59,7 @@ public class BrainsweepRecipeBuilder implements RecipeBuilder {
 			throw new IllegalStateException("No way of obtaining recipe " + pRecipeId);
 		}
 
-		this.advancement.parent(new ResourceLocation("recipes/root"))
+		this.advancement.parent(ResourceLocation.parse("recipes/root"))
 			.addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(pRecipeId))
 			.rewards(AdvancementRewards.Builder.recipe(pRecipeId))
 			.requirements(RequirementsStrategy.OR);
@@ -67,7 +67,7 @@ public class BrainsweepRecipeBuilder implements RecipeBuilder {
 			pRecipeId,
 			this.blockIn, this.entityIn, this.mediaCost, this.result,
 			this.advancement,
-			new ResourceLocation(pRecipeId.getNamespace(), "recipes/brainsweep/" + pRecipeId.getPath())));
+			ResourceLocation.parse(pRecipeId.getNamespace(), "recipes/brainsweep/" + pRecipeId.getPath())));
 	}
 
 	public record Result(ResourceLocation id, StateIngredient blockIn, BrainsweepeeIngredient villagerIn,

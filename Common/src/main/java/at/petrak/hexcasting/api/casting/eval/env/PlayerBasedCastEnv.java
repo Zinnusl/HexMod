@@ -56,8 +56,8 @@ public abstract class PlayerBasedCastEnv extends CastingEnvironment {
         super(caster.serverLevel());
         this.caster = caster;
         this.castingHand = castingHand;
-        this.ambitRadius = caster.getAttributeValue(HexAttributes.AMBIT_RADIUS);
-        this.sentinelRadius = caster.getAttributeValue(HexAttributes.SENTINEL_RADIUS);
+        this.ambitRadius = caster.getAttributeValue(HexAttributes.holder(HexAttributes.AMBIT_RADIUS));
+        this.sentinelRadius = caster.getAttributeValue(HexAttributes.holder(HexAttributes.SENTINEL_RADIUS));
     }
 
     @Override
@@ -73,10 +73,16 @@ public abstract class PlayerBasedCastEnv extends CastingEnvironment {
     @Override
     protected double getCostModifier(PatternShapeMatch match) {
         ResourceLocation loc = actionKey(match);
-        if (isOfTag(IXplatAbstractions.INSTANCE.getActionRegistry(), loc, HexTags.Actions.CANNOT_MODIFY_COST)) {
+        // actionKey is @Nullable — it returns null for PatternShapeMatch.Nothing
+        // and similar unknown-pattern paths. isOfTag is Kotlin-side with a
+        // non-null `loc` parameter, so passing null NPEs. When we don't know
+        // which action this is, treat it as "no modifier" (equivalent to
+        // CANNOT_MODIFY_COST).
+        if (loc == null
+            || isOfTag(IXplatAbstractions.INSTANCE.getActionRegistry(), loc, HexTags.Actions.CANNOT_MODIFY_COST)) {
             return 1.0;
         } else {
-            return this.caster.getAttributeValue(HexAttributes.MEDIA_CONSUMPTION_MODIFIER);
+            return this.caster.getAttributeValue(HexAttributes.holder(HexAttributes.MEDIA_CONSUMPTION_MODIFIER));
         }
     }
 
@@ -90,11 +96,11 @@ public abstract class PlayerBasedCastEnv extends CastingEnvironment {
             }
         }
         if (this.caster != null){
-            double ambitAttribute = this.caster.getAttributeValue(HexAttributes.AMBIT_RADIUS);
+            double ambitAttribute = this.caster.getAttributeValue(HexAttributes.holder(HexAttributes.AMBIT_RADIUS));
             if (this.ambitRadius != ambitAttribute){
                 this.ambitRadius = ambitAttribute;
             }
-            double sentinelAttribute = this.caster.getAttributeValue(HexAttributes.SENTINEL_RADIUS);
+            double sentinelAttribute = this.caster.getAttributeValue(HexAttributes.holder(HexAttributes.SENTINEL_RADIUS));
             if (this.sentinelRadius != sentinelAttribute){
                 this.sentinelRadius = sentinelAttribute;
             }
@@ -165,14 +171,15 @@ public abstract class PlayerBasedCastEnv extends CastingEnvironment {
             double healthToRemove = Math.max(costLeft / mediaToHealth, 0.5);
             if (simulate) {
                 long simulatedRemovedMedia = Mth.ceil(Math.min(this.caster.getHealth(), healthToRemove) * mediaToHealth);
-                if (this.caster.isInvulnerableTo(this.caster.damageSources().source(HexDamageTypes.OVERCAST))) {
+                var dmgSrc = ((at.petrak.hexcasting.mixin.accessor.AccessorDamageSource)(Object)this.caster.damageSources()).hex$source(HexDamageTypes.OVERCAST, null);
+                if (dmgSrc != null && this.caster.isInvulnerableTo(dmgSrc)) {
                     simulatedRemovedMedia = 0;
                 }
                 costLeft -= simulatedRemovedMedia;
             } else {
                 var mediaAbleToCastFromHP = this.caster.getHealth() * mediaToHealth;
 
-                Mishap.trulyHurt(this.caster, this.caster.damageSources().source(HexDamageTypes.OVERCAST), (float) healthToRemove);
+                Mishap.trulyHurt(this.caster, ((at.petrak.hexcasting.mixin.accessor.AccessorDamageSource)(Object)this.caster.damageSources()).hex$source(HexDamageTypes.OVERCAST, null), (float) healthToRemove);
 
                 var actuallyTaken = Mth.ceil(mediaAbleToCastFromHP - (this.caster.getHealth() * mediaToHealth));
 
@@ -196,7 +203,9 @@ public abstract class PlayerBasedCastEnv extends CastingEnvironment {
     }
 
     protected boolean canOvercast() {
-        var adv = this.world.getServer().getAdvancements().getAdvancement(modLoc("y_u_no_cast_angy"));
+        // 1.21: ServerAdvancementManager#get returns AdvancementHolder.
+        var adv = this.world.getServer().getAdvancements().get(modLoc("y_u_no_cast_angy"));
+        if (adv == null) return false;
         var advs = this.caster.getAdvancements();
         return advs.getOrStartProgress(adv).isDone();
     }

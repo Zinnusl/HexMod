@@ -76,8 +76,9 @@ abstract public class AbstractPatternComponent implements ICustomComponent {
         ps.popPose();
     }
 
+    // 1.21 Patchouli: onVariablesAvailable has a HolderLookup.Provider arg.
     @Override
-    public void onVariablesAvailable(UnaryOperator<IVariable> lookup) {
+    public void onVariablesAvailable(UnaryOperator<IVariable> lookup, net.minecraft.core.HolderLookup.Provider provider) {
         this.patterns = this.getPatterns(lookup);
     }
 

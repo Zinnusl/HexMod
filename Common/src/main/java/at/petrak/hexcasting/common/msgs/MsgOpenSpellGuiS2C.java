@@ -6,6 +6,9 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 
@@ -23,33 +26,40 @@ public record MsgOpenSpellGuiS2C(InteractionHand hand, List<ResolvedPattern> pat
 )
     implements IMessage {
     public static final ResourceLocation ID = modLoc("cgui");
+    public static final CustomPacketPayload.Type<MsgOpenSpellGuiS2C> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgOpenSpellGuiS2C> CODEC = IMessage.streamCodec(MsgOpenSpellGuiS2C::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgOpenSpellGuiS2C> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {
         return ID;
     }
 
-    public static MsgOpenSpellGuiS2C deserialize(ByteBuf buffer) {
-        var buf = new FriendlyByteBuf(buffer);
-
+    public static MsgOpenSpellGuiS2C deserialize(RegistryFriendlyByteBuf buffer) {
+        var buf = buffer;
         var hand = buf.readEnum(InteractionHand.class);
 
-        var patterns = buf.readList(fbb -> ResolvedPattern.fromNBT(fbb.readAnySizeNbt()));
+        // 1.21: readList takes StreamDecoder<? super ByteBuf, T>; inline the typed lambda.
+        var patterns = buf.<ResolvedPattern>readList(fbb -> ResolvedPattern.fromNBT((net.minecraft.nbt.CompoundTag) fbb.readNbt(net.minecraft.nbt.NbtAccounter.unlimitedHeap())));
 
-        var stack = buf.readList(FriendlyByteBuf::readNbt);
-        var raven = buf.readAnySizeNbt();
+        var stack = buf.<CompoundTag>readList(fbb -> fbb.readNbt());
+        var raven = (net.minecraft.nbt.CompoundTag) buf.readNbt(net.minecraft.nbt.NbtAccounter.unlimitedHeap());
 
         var parenCount = buf.readVarInt();
 
         return new MsgOpenSpellGuiS2C(hand, patterns, stack, raven, parenCount);
     }
 
-    public void serialize(FriendlyByteBuf buf) {
+    public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeEnum(this.hand);
 
         buf.writeCollection(this.patterns, (fbb, pat) -> fbb.writeNbt(pat.serializeToNBT()));
 
-        buf.writeCollection(this.stack, FriendlyByteBuf::writeNbt);
+        buf.writeCollection(this.stack, (fbb, t) -> fbb.writeNbt(t));
         buf.writeNbt(this.ravenmind);
 
         buf.writeVarInt(this.parenCount);

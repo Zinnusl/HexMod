@@ -1,85 +1,76 @@
 package at.petrak.hexcasting.api.advancements;
 
-import com.google.gson.JsonElement;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.BuiltInExceptionProvider;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.util.GsonHelper;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import javax.annotation.Nullable;
-import java.util.Objects;
-import java.util.function.Function;
+import java.util.Optional;
 
-public class MinMaxLongs extends MinMaxBounds<Long> {
-    public static final MinMaxLongs ANY = new MinMaxLongs(null, null);
-    @Nullable
-    private final Long minSq;
-    @Nullable
-    private final Long maxSq;
+/**
+ * Long-typed min/max bound. In 1.21 {@code net.minecraft.advancements.critereon.MinMaxBounds}
+ * became a sealed interface tightly coupled to its Int/Double subtypes, so this standalone
+ * class mirrors the API hex depends on without inheriting from it.
+ */
+public final class MinMaxLongs {
+    public static final MinMaxLongs ANY = new MinMaxLongs(Optional.empty(), Optional.empty());
 
-    private static MinMaxLongs create(StringReader reader, @Nullable Long min, @Nullable Long max) throws CommandSyntaxException {
-        if (min != null && max != null && min > max) {
-            throw ERROR_SWAPPED.createWithContext(reader);
-        } else {
-            return new MinMaxLongs(min, max);
-        }
+    public static final Codec<MinMaxLongs> CODEC = RecordCodecBuilder.create(inst ->
+        inst.group(
+            Codec.LONG.optionalFieldOf("min").forGetter(MinMaxLongs::minOpt),
+            Codec.LONG.optionalFieldOf("max").forGetter(MinMaxLongs::maxOpt)
+        ).apply(inst, MinMaxLongs::new)
+    );
+
+    private final Optional<Long> min;
+    private final Optional<Long> max;
+    private final Optional<Long> minSq;
+    private final Optional<Long> maxSq;
+
+    private MinMaxLongs(Optional<Long> min, Optional<Long> max) {
+        this.min = min;
+        this.max = max;
+        this.minSq = min.map(l -> l * l);
+        this.maxSq = max.map(l -> l * l);
     }
 
-    @Nullable
-    private static Long squareOpt(@Nullable Long l) {
-        return l == null ? null : l * l;
+    public Optional<Long> minOpt() {
+        return this.min;
     }
 
-    private MinMaxLongs(@Nullable Long min, @Nullable Long max) {
-        super(min, max);
-        this.minSq = squareOpt(min);
-        this.maxSq = squareOpt(max);
+    public Optional<Long> maxOpt() {
+        return this.max;
+    }
+
+    public boolean isAny() {
+        return this.min.isEmpty() && this.max.isEmpty();
     }
 
     public static MinMaxLongs exactly(long l) {
-        return new MinMaxLongs(l, l);
+        return new MinMaxLongs(Optional.of(l), Optional.of(l));
     }
 
     public static MinMaxLongs between(long min, long max) {
-        return new MinMaxLongs(min, max);
+        return new MinMaxLongs(Optional.of(min), Optional.of(max));
     }
 
     public static MinMaxLongs atLeast(long min) {
-        return new MinMaxLongs(min, null);
+        return new MinMaxLongs(Optional.of(min), Optional.empty());
     }
 
     public static MinMaxLongs atMost(long max) {
-        return new MinMaxLongs(null, max);
+        return new MinMaxLongs(Optional.empty(), Optional.of(max));
     }
 
     public boolean matches(long l) {
-        if (this.min != null && this.min > l) {
+        if (this.min.isPresent() && this.min.get() > l) {
             return false;
-        } else {
-            return this.max == null || this.max >= l;
         }
+        return this.max.isEmpty() || this.max.get() >= l;
     }
 
     public boolean matchesSqr(long l) {
-        if (this.minSq != null && this.minSq > l) {
+        if (this.minSq.isPresent() && this.minSq.get() > l) {
             return false;
-        } else {
-            return this.maxSq == null || this.maxSq >= l;
         }
-    }
-
-    public static MinMaxLongs fromJson(@Nullable JsonElement json) {
-        return fromJson(json, ANY, GsonHelper::convertToLong, MinMaxLongs::new);
-    }
-
-    public static MinMaxLongs fromReader(StringReader reader) throws CommandSyntaxException {
-        return fromReader(reader, (l) -> l);
-    }
-
-    public static MinMaxLongs fromReader(StringReader reader, Function<Long, Long> map) throws CommandSyntaxException {
-        BuiltInExceptionProvider builtInExceptions = CommandSyntaxException.BUILT_IN_EXCEPTIONS;
-        Objects.requireNonNull(builtInExceptions);
-        return fromReader(reader, MinMaxLongs::create, Long::parseLong, builtInExceptions::readerInvalidInt, map);
+        return this.maxSq.isEmpty() || this.maxSq.get() >= l;
     }
 }

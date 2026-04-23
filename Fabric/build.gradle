@@ -1,8 +1,13 @@
 plugins {
-    id 'fabric-loom' version "1.6-SNAPSHOT"
-    id "at.petra-k.pkpcpbp.PKSubprojPlugin"
+    // id 'fabric-loom' version "1.8.9"
 }
 
+architectury {
+    platformSetupLoomIde()
+    fabric()
+}
+
+// FIXME: update dependencies/versions before releasing 0.12
 pkSubproj {
     pkPublish = true
     curseforgeJar = remapJar.archiveFile
@@ -26,6 +31,7 @@ pkSubproj {
         "fabric-api:0.84.0+1.20.1",
     ])
 }
+
 
 loom {
     mixin.defaultRefmapName = "hexcasting.mixins.refmap.json"
@@ -55,6 +61,24 @@ loom {
     }
 }
 
+// god only knows what the hell this does
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentFabric.extendsFrom common
+
+    // Files in this configuration will be bundled into your mod using the Shadow plugin.
+    // Don't use the `shadow` configuration from the plugin itself as it's meant for excluding files.
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
 repositories {
     mavenCentral()
 
@@ -62,10 +86,10 @@ repositories {
     maven { url = 'https://maven.blamejared.com' }
     // modmenu and clothconfig
     maven { url "https://maven.shedaniel.me/" }
+    // Cardinal Components
     maven { url 'https://maven.ladysnake.org/releases' }
-    // Entity reach
-    maven { url "https://maven.jamieswhiteshirt.com/libs-release/" }
     maven { url "https://mvn.devos.one/snapshots/" }
+    // EMI
     maven { url = "https://maven.terraformersmc.com/releases/" }
     exclusiveContent {
         forRepository {
@@ -75,6 +99,8 @@ repositories {
     }
     // pehkui
     maven { url = "https://jitpack.io" }
+    // accessories
+    maven { url 'https://maven.wispforest.io/releases' }
 
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so:
     flatDir {
@@ -83,24 +109,19 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${minecraftVersion}"
-    mappings loom.officialMojangMappings()
     modImplementation("net.fabricmc:fabric-language-kotlin:${fabricLanguageKotlinVersion}")
     modImplementation "net.fabricmc:fabric-loader:${fabricLoaderVersion}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricVersion}"
 
-    // Reqs
-    compileOnly "org.jetbrains:annotations:$jetbrainsAnnotationsVersion"
-    testCompileOnly "org.jetbrains:annotations:$jetbrainsAnnotationsVersion"
-    compileOnly "com.demonwav.mcdev:annotations:1.0"
+    common(project(path: ':Common', configuration: 'namedElements')) { transitive false }
+    shadowBundle project(path: ':Common', configuration: 'transformProductionFabric')
 
-    implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
-    compileOnly project(":Common")
-
-    modImplementation "at.petra-k.paucal:paucal-fabric-$minecraftVersion:$paucalVersion"
-    modImplementation "vazkii.patchouli:Patchouli:$minecraftVersion-$patchouliVersion-FABRIC-SNAPSHOT"
-
-    modImplementation "com.samsthenerd.inline:inline-fabric:$minecraftVersion-$inlineVersion"
+    // === MANDATORY DEPS ===
+    modImplementation "at.petra-k:paucal:$paucalVersion+$minecraftVersion-fabric"
+    // dear mod devs, don't put the platform in the middle of your version code
+    modImplementation "vazkii.patchouli:Patchouli:1.21-$patchouliVersion-FABRIC-SNAPSHOT"
+//    modImplementation "com.samsthenerd.inline:inline-fabric:$minecraftVersion-$inlineVersion"
+    modImplementation "io.wispforest:accessories-fabric:$accessoriesVersion"
 
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:$cardinalComponentsVersion"
 //    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-util:$cardinalComponentsVersion"
@@ -108,22 +129,18 @@ dependencies {
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-item:$cardinalComponentsVersion"
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-block:$cardinalComponentsVersion"
 
-//    modImplementation "com.jamieswhiteshirt:reach-entity-attributes:${entityReachVersion}"
-//    include "com.jamieswhiteshirt:reach-entity-attributes:${entityReachVersion}"
-
     // apparently the 1.18 version Just Works on 1.19
     modImplementation "${modID}:serialization-hooks:$serializationHooksVersion"
     include "${modID}:serialization-hooks:$serializationHooksVersion"
     implementation(include("com.github.LlamaLad7:MixinExtras:0.1.1"))
 
-    // Optional integrations
+    // === OPTIONAL DEPS ===
 
     modApi("me.shedaniel.cloth:cloth-config-fabric:$clothConfigVersion") {
         exclude(group: "net.fabricmc.fabric-api")
     }
-
-    modImplementation "dev.emi:trinkets:$trinketsVersion"
-    modImplementation "dev.emi:emi-fabric:${emiVersion}"
+    modCompileOnly "dev.emi:emi-fabric:${emiVersion}:api"
+    modLocalRuntime "dev.emi:emi-fabric:${emiVersion}"
 
 //    modImplementation "maven.modrinth:gravity-api:$gravityApiVersion"
     modApi("com.github.Virtuoel:Pehkui:${pehkuiVersion}", {
@@ -140,6 +157,12 @@ dependencies {
 //    modImplementation "maven.modrinth:sodium:${sodiumVersion}"
     modImplementation "maven.modrinth:lithium:${lithiumVersion}"
 //    modImplementation "maven.modrinth:phosphor:${phosphorVersion}"
+
+    // === OTHER STUFF ===
+    compileOnly "org.jetbrains:annotations:$jetbrainsAnnotationsVersion"
+    testCompileOnly "org.jetbrains:annotations:$jetbrainsAnnotationsVersion"
+    compileOnly "com.demonwav.mcdev:annotations:1.0"
+    implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
 }
 
 tasks.withType(JavaCompile) {

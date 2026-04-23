@@ -2,6 +2,8 @@ package at.petrak.hexcasting.common.lib;
 
 import at.petrak.hexcasting.api.HexAPI;
 import at.petrak.hexcasting.api.casting.eval.env.PlayerBasedCastEnv;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
@@ -15,12 +17,20 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
 /**
  * On forge: these are setup in ForgeHexInit
  * On fabric: it's a mixin
+ * <p>
+ * 1.21: attribute APIs (e.g. {@code LivingEntity#getAttributeValue}) take
+ * {@link Holder}&lt;Attribute&gt;. Call {@link #holder(Attribute)} to wrap a registered
+ * attribute as a Holder once the registry is frozen.
  */
 public class HexAttributes {
     public static void register(BiConsumer<Attribute, ResourceLocation> r) {
         for (var e : ATTRIBUTES.entrySet()) {
             r.accept(e.getValue(), e.getKey());
         }
+    }
+
+    public static Holder<Attribute> holder(Attribute attr) {
+        return BuiltInRegistries.ATTRIBUTE.wrapAsHolder(attr);
     }
 
     private static final Map<ResourceLocation, Attribute> ATTRIBUTES = new LinkedHashMap<>();

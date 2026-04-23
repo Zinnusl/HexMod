@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "tag": "hexcasting:edified_logs"
+    }
+  ],
+  "result": {
+    "id": "hexcasting:edified_planks",
+    "count": 4
+  }
+}

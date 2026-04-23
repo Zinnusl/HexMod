@@ -64,8 +64,8 @@ public interface IotaHolderItem {
         if (NBTHelper.hasString(stack, TAG_OVERRIDE_VISUALLY)) {
             var override = NBTHelper.getString(stack, TAG_OVERRIDE_VISUALLY);
 
-            if (override != null && ResourceLocation.isValidResourceLocation(override)) {
-                var key = new ResourceLocation(override);
+            if (override != null && null != ResourceLocation.tryParse(override)) {
+                var key = ResourceLocation.parse(override);
                 if (HexIotaTypes.REGISTRY.containsKey(key)) {
                     var iotaType = HexIotaTypes.REGISTRY.get(key);
                     if (iotaType != null) {

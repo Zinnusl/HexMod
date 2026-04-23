@@ -9,8 +9,11 @@ import at.petrak.hexcasting.common.lib.HexSounds;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,14 +30,21 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
 public record MsgShiftScrollC2S(double mainHandDelta, double offHandDelta, boolean isCtrl, boolean invertSpellbook,
                                 boolean invertAbacus) implements IMessage {
     public static final ResourceLocation ID = modLoc("scroll");
+    public static final CustomPacketPayload.Type<MsgShiftScrollC2S> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgShiftScrollC2S> CODEC = IMessage.streamCodec(MsgShiftScrollC2S::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgShiftScrollC2S> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {
         return ID;
     }
 
-    public static MsgShiftScrollC2S deserialize(ByteBuf buffer) {
-        var buf = new FriendlyByteBuf(buffer);
+    public static MsgShiftScrollC2S deserialize(RegistryFriendlyByteBuf buffer) {
+        var buf = buffer;
         var mainHandDelta = buf.readDouble();
         var offHandDelta = buf.readDouble();
         var isCtrl = buf.readBoolean();
@@ -43,7 +53,7 @@ public record MsgShiftScrollC2S(double mainHandDelta, double offHandDelta, boole
         return new MsgShiftScrollC2S(mainHandDelta, offHandDelta, isCtrl, invertSpellbook, invertAbacus);
     }
 
-    public void serialize(FriendlyByteBuf buf) {
+    public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeDouble(this.mainHandDelta);
         buf.writeDouble(this.offHandDelta);
         buf.writeBoolean(this.isCtrl);
@@ -82,19 +92,22 @@ public record MsgShiftScrollC2S(double mainHandDelta, double offHandDelta, boole
         var sealed = ItemSpellbook.isSealed(stack);
 
         MutableComponent component;
-        if (hand == InteractionHand.OFF_HAND && stack.hasCustomHoverName()) {
+        // 1.21: Rarity.color is private; use the public ChatFormatting from Rarity.getStyleModifier.
+        // hasCustomHoverName → check CUSTOM_NAME component.
+        boolean hasCustomName = stack.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
+        if (hand == InteractionHand.OFF_HAND && hasCustomName) {
             if (sealed) {
                 component = Component.translatable("hexcasting.tooltip.spellbook.page_with_name.sealed",
                     Component.literal(String.valueOf(newIdx)).withStyle(ChatFormatting.WHITE),
                     Component.literal(String.valueOf(len)).withStyle(ChatFormatting.WHITE),
-                    Component.literal("").withStyle(stack.getRarity().color, ChatFormatting.ITALIC)
+                    Component.literal("").withStyle(ChatFormatting.ITALIC)
                         .append(stack.getHoverName()),
                     Component.translatable("hexcasting.tooltip.spellbook.sealed").withStyle(ChatFormatting.GOLD));
             } else {
                 component = Component.translatable("hexcasting.tooltip.spellbook.page_with_name",
                     Component.literal(String.valueOf(newIdx)).withStyle(ChatFormatting.WHITE),
                     Component.literal(String.valueOf(len)).withStyle(ChatFormatting.WHITE),
-                    Component.literal("").withStyle(stack.getRarity().color, ChatFormatting.ITALIC)
+                    Component.literal("").withStyle(ChatFormatting.ITALIC)
                         .append(stack.getHoverName()));
             }
 

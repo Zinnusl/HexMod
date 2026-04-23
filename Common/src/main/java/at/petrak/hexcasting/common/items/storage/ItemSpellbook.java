@@ -46,7 +46,7 @@ public class ItemSpellbook extends Item implements IotaHolderItem, VariantItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip,
+    public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext ctx, List<Component> tooltip,
         TooltipFlag isAdvanced) {
         boolean sealed = isSealed(stack);
         boolean empty = false;
@@ -92,7 +92,7 @@ public class ItemSpellbook extends Item implements IotaHolderItem, VariantItem {
 
         IotaHolderItem.appendHoverText(this, stack, tooltip, isAdvanced);
 
-        super.appendHoverText(stack, level, tooltip, isAdvanced);
+        super.appendHoverText(stack, ctx, tooltip, isAdvanced);
     }
 
     @Override
@@ -103,11 +103,16 @@ public class ItemSpellbook extends Item implements IotaHolderItem, VariantItem {
         int shiftedIdx = Math.max(1, index);
         String nameKey = String.valueOf(shiftedIdx);
         CompoundTag names = NBTHelper.getOrCreateCompound(stack, TAG_PAGE_NAMES);
-        if (stack.hasCustomHoverName()) {
-            names.putString(nameKey, Component.Serializer.toJson(stack.getHoverName()));
+        // 1.21: custom-name is a DataComponent; Component.Serializer codec needs a registry.
+        var customName = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
+        if (customName != null && pLevel != null) {
+            var json = Component.Serializer.toJson(customName, pLevel.registryAccess());
+            names.putString(nameKey, json);
         } else {
             names.remove(nameKey);
         }
+        // getOrCreateCompound returns a copy; write it back explicitly.
+        NBTHelper.putCompound(stack, TAG_PAGE_NAMES, names);
     }
 
     public static boolean arePagesEmpty(ItemStack stack) {
@@ -146,22 +151,40 @@ public class ItemSpellbook extends Item implements IotaHolderItem, VariantItem {
 
         int idx = getPage(stack, 1);
         var key = String.valueOf(idx);
+        // 1.21: NBTHelper.getCompound returns a *copy* out of CUSTOM_DATA; mutations on the
+        // returned compound don't persist. Build the updated compound locally, then write it
+        // back via NBTHelper.putCompound.
         CompoundTag pages = NBTHelper.getCompound(stack, TAG_PAGES);
         if (pages != null) {
             if (datum == null) {
                 pages.remove(key);
-                NBTHelper.remove(NBTHelper.getCompound(stack, TAG_SEALED), key);
             } else {
                 pages.put(key, IotaType.serialize(datum));
             }
 
             if (pages.isEmpty()) {
                 NBTHelper.remove(stack, TAG_PAGES);
+            } else {
+                NBTHelper.putCompound(stack, TAG_PAGES, pages);
             }
         } else if (datum != null) {
-            NBTHelper.getOrCreateCompound(stack, TAG_PAGES).put(key, IotaType.serialize(datum));
-        } else {
-            NBTHelper.remove(NBTHelper.getCompound(stack, TAG_SEALED), key);
+            CompoundTag fresh = new CompoundTag();
+            fresh.put(key, IotaType.serialize(datum));
+            NBTHelper.putCompound(stack, TAG_PAGES, fresh);
+        }
+
+        if (datum == null) {
+            // Seal state is keyed on page index; removing the iota also clears the seal flag
+            // for that page. Same copy-vs-mutate rule applies.
+            CompoundTag sealTags = NBTHelper.getCompound(stack, TAG_SEALED);
+            if (sealTags != null) {
+                sealTags.remove(key);
+                if (sealTags.isEmpty()) {
+                    NBTHelper.remove(stack, TAG_SEALED);
+                } else {
+                    NBTHelper.putCompound(stack, TAG_SEALED, sealTags);
+                }
+            }
         }
     }
 
@@ -235,9 +258,16 @@ public class ItemSpellbook extends Item implements IotaHolderItem, VariantItem {
         String nameKey = String.valueOf(shiftedIdx);
         String name = NBTHelper.getString(names, nameKey);
         if (name != null) {
-            stack.setHoverName(Component.Serializer.fromJson(name));
+            // Needs a registry access, which we don't have in this context; use direct
+            // JSON parse which produces a Component without registry-qualified types.
+            var parsed = Component.Serializer.fromJson(name, net.minecraft.core.RegistryAccess.EMPTY);
+            if (parsed != null) {
+                stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, parsed);
+            } else {
+                stack.remove(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
+            }
         } else {
-            stack.resetHoverName();
+            stack.remove(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
         }
 
         return idx;

@@ -106,8 +106,9 @@ public class BlockEntityRedstoneImpetus extends BlockEntityAbstractImpetus {
             if (!name.equals(cachedDisplayProfile) || cachedDisplayStack == null) {
                 cachedDisplayProfile = name;
                 var head = new ItemStack(Items.PLAYER_HEAD);
-                NBTHelper.put(head, "SkullOwner", NbtUtils.writeGameProfile(new CompoundTag(), name));
-                head.getItem().verifyTagAfterLoad(head.getOrCreateTag());
+                // 1.21: player-head data is the PROFILE component wrapping ResolvableProfile.
+                head.set(net.minecraft.core.component.DataComponents.PROFILE,
+                    new net.minecraft.world.item.component.ResolvableProfile(name));
                 cachedDisplayStack = head;
             }
             lines.add(new Pair<>(cachedDisplayStack,
@@ -125,7 +126,14 @@ public class BlockEntityRedstoneImpetus extends BlockEntityAbstractImpetus {
             tag.putUUID(TAG_STORED_PLAYER, this.storedPlayer);
         }
         if (this.storedPlayerProfile != null) {
-            tag.put(TAG_STORED_PLAYER_PROFILE, NbtUtils.writeGameProfile(new CompoundTag(), storedPlayerProfile));
+            // 1.21: NbtUtils.writeGameProfile was removed; round-trip through ResolvableProfile codec.
+            var rp = new net.minecraft.world.item.component.ResolvableProfile(this.storedPlayerProfile);
+            var encoded = net.minecraft.world.item.component.ResolvableProfile.CODEC
+                .encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, rp)
+                .result().orElse(null);
+            if (encoded instanceof CompoundTag ct) {
+                tag.put(TAG_STORED_PLAYER_PROFILE, ct);
+            }
         }
     }
 
@@ -138,7 +146,10 @@ public class BlockEntityRedstoneImpetus extends BlockEntityAbstractImpetus {
             this.storedPlayer = null;
         }
         if (tag.contains(TAG_STORED_PLAYER_PROFILE, Tag.TAG_COMPOUND)) {
-            this.storedPlayerProfile = NbtUtils.readGameProfile(tag.getCompound(TAG_STORED_PLAYER_PROFILE));
+            var rp = net.minecraft.world.item.component.ResolvableProfile.CODEC
+                .parse(net.minecraft.nbt.NbtOps.INSTANCE, tag.getCompound(TAG_STORED_PLAYER_PROFILE))
+                .result().orElse(null);
+            this.storedPlayerProfile = rp == null ? null : rp.gameProfile();
         } else {
             this.storedPlayerProfile = null;
         }

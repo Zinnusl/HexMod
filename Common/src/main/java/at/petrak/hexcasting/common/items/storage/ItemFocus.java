@@ -56,16 +56,15 @@ public class ItemFocus extends Item implements IotaHolderItem, VariantItem {
     @Override
     public void writeDatum(ItemStack stack, Iota datum) {
         if (datum == null) {
-            stack.removeTagKey(TAG_DATA);
-            stack.removeTagKey(TAG_SEALED);
+            at.petrak.hexcasting.api.utils.NBTHelper.remove(stack, TAG_DATA);
+            at.petrak.hexcasting.api.utils.NBTHelper.remove(stack, TAG_SEALED);
         } else if (!isSealed(stack)) {
             NBTHelper.put(stack, TAG_DATA, IotaType.serialize(datum));
         }
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents,
-        TooltipFlag pIsAdvanced) {
+    public void appendHoverText(ItemStack pStack, net.minecraft.world.item.Item.TooltipContext ctx, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
         IotaHolderItem.appendHoverText(this, pStack, pTooltipComponents, pIsAdvanced);
     }
 

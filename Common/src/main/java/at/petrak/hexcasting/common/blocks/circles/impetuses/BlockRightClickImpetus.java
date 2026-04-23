@@ -23,14 +23,14 @@ public class BlockRightClickImpetus extends BlockAbstractImpetus {
         return new BlockEntityRightClickImpetus(pPos, pState);
     }
 
+    // 1.21: Block#use was split; empty-hand right-click routes through useWithoutItem.
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
+    protected InteractionResult useWithoutItem(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer,
         BlockHitResult pHit) {
         if (!pPlayer.isShiftKeyDown()) {
             var tile = pLevel.getBlockEntity(pPos);
             if (tile instanceof BlockEntityRightClickImpetus impetus) {
                 if (pPlayer instanceof ServerPlayer serverPlayer) {
-//                    impetus.activateSpellCircle(serverPlayer);
                     impetus.startExecution(serverPlayer);
                 }
                 return InteractionResult.SUCCESS;

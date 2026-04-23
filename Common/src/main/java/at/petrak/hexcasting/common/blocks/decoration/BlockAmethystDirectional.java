@@ -13,8 +13,16 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class BlockAmethystDirectional extends DirectionalBlock {
+    public static final com.mojang.serialization.MapCodec<BlockAmethystDirectional> CODEC =
+        simpleCodec(BlockAmethystDirectional::new);
+
     public BlockAmethystDirectional(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends DirectionalBlock> codec() {
+        return CODEC;
     }
 
     public void onProjectileHit(Level level, BlockState state, BlockHitResult result, Projectile projectile) {

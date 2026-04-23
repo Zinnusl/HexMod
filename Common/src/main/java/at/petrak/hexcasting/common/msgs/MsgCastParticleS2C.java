@@ -7,6 +7,9 @@ import at.petrak.hexcasting.common.particles.ConjureParticleOptions;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -20,14 +23,21 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
  */
 public record MsgCastParticleS2C(ParticleSpray spray, FrozenPigment colorizer) implements IMessage {
     public static final ResourceLocation ID = modLoc("cprtcl");
+    public static final CustomPacketPayload.Type<MsgCastParticleS2C> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgCastParticleS2C> CODEC = IMessage.streamCodec(MsgCastParticleS2C::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgCastParticleS2C> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {
         return ID;
     }
 
-    public static MsgCastParticleS2C deserialize(ByteBuf buffer) {
-        var buf = new FriendlyByteBuf(buffer);
+    public static MsgCastParticleS2C deserialize(RegistryFriendlyByteBuf buffer) {
+        var buf = buffer;
         var posX = buf.readDouble();
         var posY = buf.readDouble();
         var posZ = buf.readDouble();
@@ -37,15 +47,16 @@ public record MsgCastParticleS2C(ParticleSpray spray, FrozenPigment colorizer) i
         var fuzziness = buf.readDouble();
         var spread = buf.readDouble();
         var count = buf.readInt();
-        var tag = buf.readAnySizeNbt();
-        var colorizer = FrozenPigment.fromNBT(tag);
+        // 1.21: readAnySizeNbt was removed; use the unlimited NbtAccounter variant.
+        var tag = (net.minecraft.nbt.CompoundTag) buf.readNbt(net.minecraft.nbt.NbtAccounter.unlimitedHeap());
+        var colorizer = FrozenPigment.fromNBT(tag, net.minecraft.core.RegistryAccess.EMPTY);
         return new MsgCastParticleS2C(
             new ParticleSpray(new Vec3(posX, posY, posZ), new Vec3(velX, velY, velZ), fuzziness, spread, count),
             colorizer);
     }
 
     @Override
-    public void serialize(FriendlyByteBuf buf) {
+    public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeDouble(this.spray.getPos().x);
         buf.writeDouble(this.spray.getPos().y);
         buf.writeDouble(this.spray.getPos().z);
@@ -55,7 +66,7 @@ public record MsgCastParticleS2C(ParticleSpray spray, FrozenPigment colorizer) i
         buf.writeDouble(this.spray.getFuzziness());
         buf.writeDouble(this.spray.getSpread());
         buf.writeInt(this.spray.getCount());
-        buf.writeNbt(this.colorizer.serializeToNBT());
+        buf.writeNbt(this.colorizer.serializeToNBT(net.minecraft.core.RegistryAccess.EMPTY));
     }
 
 

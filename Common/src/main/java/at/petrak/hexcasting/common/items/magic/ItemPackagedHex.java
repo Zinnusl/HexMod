@@ -90,7 +90,7 @@ public abstract class ItemPackagedHex extends ItemMediaHolder implements HexHold
 
         NBTHelper.putList(stack, TAG_PROGRAM, patsTag);
         if (pigment != null)
-            NBTHelper.putCompound(stack, TAG_PIGMENT, pigment.serializeToNBT());
+            NBTHelper.putCompound(stack, TAG_PIGMENT, pigment.serializeToNBT(net.minecraft.core.RegistryAccess.EMPTY));
 
         withMedia(stack, media, media);
     }
@@ -108,7 +108,7 @@ public abstract class ItemPackagedHex extends ItemMediaHolder implements HexHold
         var ctag = NBTHelper.getCompound(stack, TAG_PIGMENT);
         if (ctag == null)
             return null;
-        return FrozenPigment.fromNBT(ctag);
+        return FrozenPigment.fromNBT(ctag, net.minecraft.core.RegistryAccess.EMPTY);
     }
 
     @Override
@@ -159,7 +159,8 @@ public abstract class ItemPackagedHex extends ItemMediaHolder implements HexHold
 
         if (broken) {
             stack.shrink(1);
-            player.broadcastBreakEvent(usedHand);
+            // 1.21: broadcastBreakEvent was removed; the vanilla break animation
+            // now fires through Entity#onEquippedItemBroken / ItemStack#hurtAndBreak.
             return InteractionResultHolder.consume(stack);
         } else {
             return InteractionResultHolder.success(stack);

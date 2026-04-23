@@ -32,11 +32,12 @@ public class BlockConjured extends Block implements EntityBlock, IForgeLikeBlock
         super(properties);
     }
 
+    // 1.21: playerWillDestroy returns the BlockState that will be set.
     @Override
-    public void playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
-        super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
+    public BlockState playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
         // For some reason the block doesn't play breaking noises. So we fix that!
         pPlayer.playSound(SoundEvents.AMETHYST_BLOCK_BREAK, 1f, 1f);
+        return super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
     }
 
     @Nullable

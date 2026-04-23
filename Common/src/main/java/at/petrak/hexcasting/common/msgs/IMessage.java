@@ -1,24 +1,25 @@
 package at.petrak.hexcasting.common.msgs;
 
-import io.netty.buffer.Unpooled;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-// https://github.com/VazkiiMods/Botania/blob/1.18.x/Common/src/main/java/vazkii/botania/network/IPacket.java
-// yoink
-public interface IMessage {
-    default FriendlyByteBuf toBuf() {
-        var ret = new FriendlyByteBuf(Unpooled.buffer());
-        serialize(ret);
-        return ret;
+import java.util.function.Function;
+
+public interface IMessage extends CustomPacketPayload {
+    void serialize(RegistryFriendlyByteBuf buf);
+
+    ResourceLocation getFabricId();
+
+    @Override
+    CustomPacketPayload.Type<? extends CustomPacketPayload> type();
+
+    static <T extends IMessage> CustomPacketPayload.Type<T> makeType(ResourceLocation id) {
+        return new CustomPacketPayload.Type<>(id);
     }
 
-    void serialize(FriendlyByteBuf buf);
-
-    /**
-     * Forge auto-assigns incrementing integers, Fabric requires us to declare an ID
-     * These are sent using vanilla's custom plugin channel system and thus are written to every single packet.
-     * So this ID tends to be more terse.
-     */
-    ResourceLocation getFabricId();
+    static <T extends IMessage> StreamCodec<RegistryFriendlyByteBuf, T> streamCodec(Function<RegistryFriendlyByteBuf, T> deserialize) {
+        return StreamCodec.of((buf, msg) -> msg.serialize(buf), deserialize::apply);
+    }
 }

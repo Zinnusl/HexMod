@@ -7,6 +7,9 @@ import at.petrak.hexcasting.common.lib.HexSounds;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Optional;
@@ -18,21 +21,28 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
  */
 public record MsgNewSpellPatternS2C(ExecutionClientView info, int index) implements IMessage {
     public static final ResourceLocation ID = modLoc("pat_sc");
+    public static final CustomPacketPayload.Type<MsgNewSpellPatternS2C> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgNewSpellPatternS2C> CODEC = IMessage.streamCodec(MsgNewSpellPatternS2C::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgNewSpellPatternS2C> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {
         return ID;
     }
 
-    public static MsgNewSpellPatternS2C deserialize(ByteBuf buffer) {
-        var buf = new FriendlyByteBuf(buffer);
-
+    public static MsgNewSpellPatternS2C deserialize(RegistryFriendlyByteBuf buffer) {
+        var buf = buffer;
         var isStackEmpty = buf.readBoolean();
         var resolutionType = buf.readEnum(ResolvedPatternType.class);
         var index = buf.readInt();
 
-        var stack = buf.readList(FriendlyByteBuf::readNbt);
-        var raven = buf.readOptional(FriendlyByteBuf::readNbt).orElse(null);
+        // 1.21: readList takes StreamDecoder<? super ByteBuf, T>; inline typed lambdas.
+        var stack = buf.<net.minecraft.nbt.CompoundTag>readList(fbb -> fbb.readNbt());
+        var raven = buf.readOptional(fbb -> fbb.readNbt()).orElse(null);
 
         return new MsgNewSpellPatternS2C(
             new ExecutionClientView(isStackEmpty, resolutionType, stack, raven), index
@@ -40,13 +50,13 @@ public record MsgNewSpellPatternS2C(ExecutionClientView info, int index) impleme
     }
 
     @Override
-    public void serialize(FriendlyByteBuf buf) {
+    public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeBoolean(this.info.isStackClear());
         buf.writeEnum(this.info.getResolutionType());
         buf.writeInt(this.index);
 
-        buf.writeCollection(this.info.getStackDescs(), FriendlyByteBuf::writeNbt);
-        buf.writeOptional(Optional.ofNullable(this.info.getRavenmind()), FriendlyByteBuf::writeNbt);
+        buf.writeCollection(this.info.getStackDescs(), (fbb, t) -> fbb.writeNbt(t));
+        buf.writeOptional(Optional.ofNullable(this.info.getRavenmind()), (fbb, t) -> fbb.writeNbt(t));
     }
 
     public static void handle(MsgNewSpellPatternS2C self) {

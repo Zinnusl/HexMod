@@ -4,6 +4,9 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
@@ -13,14 +16,21 @@ import static at.petrak.hexcasting.api.HexAPI.modLoc;
 
 public record MsgBeepS2C(Vec3 target, int note, NoteBlockInstrument instrument) implements IMessage {
     public static final ResourceLocation ID = modLoc("beep");
+    public static final CustomPacketPayload.Type<MsgBeepS2C> TYPE = IMessage.makeType(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MsgBeepS2C> CODEC = IMessage.streamCodec(MsgBeepS2C::deserialize);
+
+    @Override
+    public CustomPacketPayload.Type<MsgBeepS2C> type() {
+        return TYPE;
+    }
 
     @Override
     public ResourceLocation getFabricId() {
         return ID;
     }
 
-    public static MsgBeepS2C deserialize(ByteBuf buffer) {
-        var buf = new FriendlyByteBuf(buffer);
+    public static MsgBeepS2C deserialize(RegistryFriendlyByteBuf buffer) {
+        var buf = buffer;
         var x = buf.readDouble();
         var y = buf.readDouble();
         var z = buf.readDouble();
@@ -30,7 +40,7 @@ public record MsgBeepS2C(Vec3 target, int note, NoteBlockInstrument instrument) 
     }
 
     @Override
-    public void serialize(FriendlyByteBuf buf) {
+    public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeDouble(this.target.x);
         buf.writeDouble(this.target.y);
         buf.writeDouble(this.target.z);

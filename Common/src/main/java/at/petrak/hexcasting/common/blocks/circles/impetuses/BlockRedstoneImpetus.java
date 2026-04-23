@@ -10,6 +10,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -40,37 +42,43 @@ public class BlockRedstoneImpetus extends BlockAbstractImpetus {
         builder.add(POWERED);
     }
 
+    // 1.21: Block#use was split. Item-hand use now returns ItemInteractionResult; empty-hand
+    // shift-click routes through useWithoutItem. Both paths are handled here.
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
-        BlockHitResult pHit) {
+    protected ItemInteractionResult useItemOn(ItemStack usedStack, BlockState pState, Level pLevel, BlockPos pPos,
+        Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
         if (pLevel instanceof ServerLevel level
             && level.getBlockEntity(pPos) instanceof BlockEntityRedstoneImpetus tile) {
-            var usedStack = pPlayer.getItemInHand(pHand);
-            if (usedStack.isEmpty() && pPlayer.isDiscrete()) {
-                tile.clearPlayer();
-                tile.sync();
-                pLevel.playSound(null, pPos, HexSounds.IMPETUS_REDSTONE_CLEAR, SoundSource.BLOCKS, 1f, 1f);
-                return InteractionResult.sidedSuccess(pLevel.isClientSide);
-            } else {
-                var datumContainer = IXplatAbstractions.INSTANCE.findDataHolder(usedStack);
-                if (datumContainer != null) {
-                    var stored = datumContainer.readIota(level);
-                    if (stored instanceof EntityIota eieio) {
-                        var entity = eieio.getEntity();
-                        if (entity instanceof Player player) {
-                            // phew, we got something
-                            tile.setPlayer(player.getGameProfile(), entity.getUUID());
-                            tile.sync();
+            var datumContainer = IXplatAbstractions.INSTANCE.findDataHolder(usedStack);
+            if (datumContainer != null) {
+                var stored = datumContainer.readIota(level);
+                if (stored instanceof EntityIota eieio) {
+                    var entity = eieio.getEntity();
+                    if (entity instanceof Player player) {
+                        tile.setPlayer(player.getGameProfile(), entity.getUUID());
+                        tile.sync();
 
-                            pLevel.playSound(null, pPos, HexSounds.IMPETUS_REDSTONE_DING,
-                                SoundSource.BLOCKS, 1f, 1f);
-                            return InteractionResult.sidedSuccess(pLevel.isClientSide);
-                        }
+                        pLevel.playSound(null, pPos, HexSounds.IMPETUS_REDSTONE_DING,
+                            SoundSource.BLOCKS, 1f, 1f);
+                        return ItemInteractionResult.sidedSuccess(pLevel.isClientSide);
                     }
                 }
             }
         }
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
 
+    @Override
+    protected InteractionResult useWithoutItem(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer,
+        BlockHitResult pHit) {
+        if (pPlayer.isDiscrete()
+            && pLevel instanceof ServerLevel level
+            && level.getBlockEntity(pPos) instanceof BlockEntityRedstoneImpetus tile) {
+            tile.clearPlayer();
+            tile.sync();
+            pLevel.playSound(null, pPos, HexSounds.IMPETUS_REDSTONE_CLEAR, SoundSource.BLOCKS, 1f, 1f);
+            return InteractionResult.sidedSuccess(pLevel.isClientSide);
+        }
         return InteractionResult.PASS;
     }
 

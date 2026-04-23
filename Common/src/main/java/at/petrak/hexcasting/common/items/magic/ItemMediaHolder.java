@@ -86,13 +86,11 @@ public abstract class ItemMediaHolder extends Item implements MediaHolderItem {
         return MediaHelper.mediaBarWidth(media, maxMedia);
     }
 
-    @Override
-    public boolean canBeDepleted() {
-        return false;
-    }
+    // 1.21: Item#canBeDepleted was removed; durability bar visibility is driven by
+    // DataComponents.MAX_DAMAGE / getBarVisible. Hex media items manage their own bar.
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents,
+    public void appendHoverText(ItemStack pStack, net.minecraft.world.item.Item.TooltipContext ctx, List<Component> pTooltipComponents,
         TooltipFlag pIsAdvanced) {
         var maxMedia = getMaxMedia(pStack);
         if (maxMedia > 0) {
@@ -114,6 +112,6 @@ public abstract class ItemMediaHolder extends Item implements MediaHolderItem {
                     mediamount, maxCapacity, percentFull));
         }
 
-        super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
+        super.appendHoverText(pStack, ctx, pTooltipComponents, pIsAdvanced);
     }
 }
