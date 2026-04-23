@@ -9,8 +9,9 @@ import at.petrak.hexcasting.common.items.ItemLoreFragment;
 import at.petrak.hexcasting.common.lib.HexItems;
 import at.petrak.hexcasting.common.lib.HexSounds;
 import net.minecraft.ChatFormatting;
-import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementNode;
+import net.minecraft.advancements.AdvancementTree;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -219,13 +220,15 @@ public class ItemCreativeUnlocker extends Item implements MediaHolderItem {
         if (level instanceof ServerLevel slevel && consumer instanceof ServerPlayer player) {
             var names = new ArrayList<>(ItemLoreFragment.NAMES);
             names.add(0, modLoc("root"));
+            var advancementManager = slevel.getServer().getAdvancements();
+            var tree = advancementManager.tree();
             for (var name : names) {
                 // 1.21: ServerAdvancementManager.get(ResourceLocation) returns AdvancementHolder.
-                var rootAdv = slevel.getServer().getAdvancements().get(name);
+                var rootAdv = advancementManager.get(name);
                 if (rootAdv != null) {
                     var children = new ArrayList<AdvancementHolder>();
                     children.add(rootAdv);
-                    addChildren(rootAdv, children);
+                    addChildren(tree, rootAdv, children);
 
                     var adman = player.getAdvancements();
 
@@ -270,10 +273,22 @@ public class ItemCreativeUnlocker extends Item implements MediaHolderItem {
         tooltipComponents.add(Component.translatable("item.hexcasting.creative_unlocker.tooltip", modName).withStyle(ChatFormatting.GRAY));
     }
 
-    // 1.21: Advancement no longer exposes getChildren. AdvancementHolder + AdvancementTree
-    // hold the tree now. This helper was used to recursively award all sub-advancements
-    // for debug builds; without a direct children accessor we simply award the root.
-    // TODO(port-1.21): walk the advancement tree via PlayerAdvancements / AdvancementTree.
-    private static void addChildren(AdvancementHolder root, List<AdvancementHolder> out) {
+    // 1.21: Advancement no longer exposes getChildren(); the tree lives on
+    // AdvancementTree / AdvancementNode. We look up the node for the root
+    // holder and walk its children recursively, collecting each descendant's
+    // AdvancementHolder so the caller can award every criterion.
+    private static void addChildren(AdvancementTree tree, AdvancementHolder root, List<AdvancementHolder> out) {
+        AdvancementNode node = tree.get(root);
+        if (node == null) {
+            return;
+        }
+        addChildren(node, out);
+    }
+
+    private static void addChildren(AdvancementNode node, List<AdvancementHolder> out) {
+        for (AdvancementNode kid : node.children()) {
+            out.add(kid.holder());
+            addChildren(kid, out);
+        }
     }
 }
