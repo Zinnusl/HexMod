@@ -26,6 +26,23 @@ if [ -n "$JDK21" ]; then
     export PATH="$JDK21/bin:$PATH"
 fi
 
+# The dev-runtime classpath resolves Kotlin-for-Forge as separate kfflang/kffmod
+# artifacts that NeoForge's dev launcher rejects ("unrecognized FML mod-type:
+# LANGPROVIDER"), so the mod fails to load via the standard implementation dep.
+# Work around by dropping the Modrinth all-in-one KFF mod jar into the dev
+# run's mods folder — loom picks it up alongside the built hex jar.
+CACHE_DIR="build/smoketest-cache"
+mkdir -p "$CACHE_DIR" Neoforge/run/mods
+KFF_JAR="$CACHE_DIR/kotlinforforge-5.6.0-neoforge.jar"
+if [ ! -f "$KFF_JAR" ]; then
+    log "Fetching Kotlin-for-Forge 5.6.0 from Modrinth"
+    curl -sSL --fail -o "$KFF_JAR.tmp" \
+        "https://cdn.modrinth.com/data/ordsPcFz/versions/5Vlx7W4o/kotlinforforge-5.6.0-all.jar" \
+        && mv "$KFF_JAR.tmp" "$KFF_JAR" || fail "KFF download failed"
+fi
+rm -f Neoforge/run/mods/kotlinforforge-*.jar
+cp "$KFF_JAR" "Neoforge/run/mods/$(basename "$KFF_JAR")"
+
 log "Running :Neoforge:runGameTest (max ${BOOT_TIMEOUT}s)"
 # --stacktrace so any test failure surfaces the test name + assertion line.
 timeout "$BOOT_TIMEOUT" sh ./gradlew :Neoforge:runGameTest --no-daemon --stacktrace
