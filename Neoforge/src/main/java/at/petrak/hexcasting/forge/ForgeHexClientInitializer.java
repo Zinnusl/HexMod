@@ -55,6 +55,24 @@ public class ForgeHexClientInitializer {
     public static void register(IEventBus modBus) {
         modBus.addListener(ForgeHexClientInitializer::clientInit);
 
+        // Explicit mod-bus wiring for the @SubscribeEvent-annotated methods below.
+        // @EventBusSubscriber auto-scan is unreliable across dev/production classpaths
+        // (the class-file index sometimes skips classes not loaded before scan runs),
+        // and when auto-scan misses these, the tooltip factory never registers — then
+        // rendering any scroll/slate with a pattern tooltip crashes with
+        // "Unknown TooltipComponent: hexcasting.common.misc.PatternTooltip".
+        modBus.addListener(ForgeHexClientInitializer::registerTooltipComponents);
+        modBus.addListener(ForgeHexClientInitializer::registerRenderers);
+        modBus.addListener(ForgeHexClientInitializer::registerEntityLayers);
+        modBus.addListener((RegisterShadersEvent evt) -> {
+            try {
+                registerShaders(evt);
+            } catch (IOException e) {
+                throw new RuntimeException("hex shader registration failed", e);
+            }
+        });
+        modBus.addListener(ForgeHexClientInitializer::registerParticles);
+
         var evBus = NeoForge.EVENT_BUS;
 
         // 1.21: getPartialTick returns DeltaTracker; unwrap to a float partial-tick.
