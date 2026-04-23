@@ -226,5 +226,21 @@ public class ForgeHexInitializer {
                     evt.setUseBlock(net.neoforged.neoforge.common.util.TriState.FALSE);
                 }
             });
+
+        // Altiora elytra mimicry: Fabric uses EntityElytraEvents.CUSTOM; NeoForge has no
+        // equivalent, so call Player.startFallFlying each tick while altiora is active
+        // and the player is airborne. Vanilla's natural ground-contact reset still stops
+        // the glide when altiora ends (OpAltiora.checkPlayerCollision fires its own reset
+        // on the xplat side).
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
+            (net.neoforged.neoforge.event.tick.EntityTickEvent.Post evt) -> {
+                if (evt.getEntity() instanceof net.minecraft.world.entity.player.Player p
+                    && !p.level().isClientSide) {
+                    var altiora = at.petrak.hexcasting.xplat.IXplatAbstractions.INSTANCE.getAltiora(p);
+                    if (altiora != null && !p.onGround() && !p.isFallFlying()) {
+                        p.startFallFlying();
+                    }
+                }
+            });
     }
 }
