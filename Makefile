@@ -31,7 +31,7 @@ GRADLEW  := sh ./gradlew
 # Excludes -dev, -sources, -shadow, -all variants produced by loom/shadow.
 JAR_PATTERN := hexcasting-neoforge-*.jar
 
-.PHONY: all build deploy clean run verify help smoketest smoketest-clean gametest
+.PHONY: all build deploy clean run verify help smoketest smoketest-clean gametest test
 
 all: deploy
 
@@ -44,6 +44,7 @@ help:
 	@echo "make smoketest       -- boot dedicated server with only hex jar, check for errors"
 	@echo "make smoketest-clean -- wipe build/smoketest (forces fresh server install)"
 	@echo "make gametest        -- run hex @GameTest assertions (feeble_mind attribute, staff use, amethyst cluster, recipe)"
+	@echo "make test            -- run Common JUnit tests (data lint + HexPattern + NBTHelper round-trips)"
 
 build:
 	$(GRADLEW) :Neoforge:build
@@ -94,3 +95,15 @@ smoketest-clean:
 # any assertion fires.
 gametest:
 	@bash scripts/gametest.sh
+
+# Unit / lint test suite under Common/src/test. Runs headless, ~25s:
+# - DataFileLintTest: scans every data JSON for 1.20→1.21 anti-patterns
+#   (legacy {Key:value} NBT, BlockEntityTag refs, forge: tags, removed
+#   loot functions, crafting result {item: …} shape).
+# - HexPatternRoundtripTest: HexPattern serialize/fromNBT + HexCoord math
+#   survive the 1.21 NBT API. If this breaks, every saved pattern corrupts.
+# - NBTHelperCustomDataTest: stack.set/get via DataComponents.CUSTOM_DATA
+#   behaves correctly for scalar put/get, remove, independent keys, copy().
+#   The single biggest surface of NBT bugs during the port.
+test:
+	$(GRADLEW) :Common:test

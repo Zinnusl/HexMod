@@ -1,0 +1,10 @@
+[12:26:34] [Test worker/INFO]: [STDOUT]: Perlin:
+[12:26:34] [Test worker/INFO]: [STDOUT]: Simplex:
+[12:26:35] [Test worker/INFO]: [STDOUT]: HexPattern[EAST, wqddeadaqadada]
+[12:26:35] [Test worker/INFO]: [STDOUT]: HexPattern[NORTH_WEST, adaqaeddqwaaqa]
+[12:26:35] [Test worker/INFO]: [STDOUT]: HexPattern[SOUTH_EAST, awdqaaewddwada]
+[12:26:35] [Test worker/INFO]: [STDOUT]: HexPattern[EAST, aaqawdeddqddaa]
+[12:26:35] [Test worker/INFO]: [STDOUT]: HexPattern[SOUTH_WEST, ddaawdaddwaada]
+[12:26:35] [Test worker/INFO]: [STDOUT]: HexPattern[EAST, ddedqqddqdedwa]
+[12:26:35] [Test worker/INFO]: [STDOUT]: HexPattern[NORTH_WEST, aeeaaeaeddwawd]
+[12:26:35] [Test worker/INFO]: [STDOUT]: HexPattern[EAST, waadaqadaedded]
