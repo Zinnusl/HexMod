@@ -151,22 +151,40 @@ public class ItemSpellbook extends Item implements IotaHolderItem, VariantItem {
 
         int idx = getPage(stack, 1);
         var key = String.valueOf(idx);
+        // 1.21: NBTHelper.getCompound returns a *copy* out of CUSTOM_DATA; mutations on the
+        // returned compound don't persist. Build the updated compound locally, then write it
+        // back via NBTHelper.putCompound.
         CompoundTag pages = NBTHelper.getCompound(stack, TAG_PAGES);
         if (pages != null) {
             if (datum == null) {
                 pages.remove(key);
-                NBTHelper.remove(NBTHelper.getCompound(stack, TAG_SEALED), key);
             } else {
                 pages.put(key, IotaType.serialize(datum));
             }
 
             if (pages.isEmpty()) {
                 NBTHelper.remove(stack, TAG_PAGES);
+            } else {
+                NBTHelper.putCompound(stack, TAG_PAGES, pages);
             }
         } else if (datum != null) {
-            NBTHelper.getOrCreateCompound(stack, TAG_PAGES).put(key, IotaType.serialize(datum));
-        } else {
-            NBTHelper.remove(NBTHelper.getCompound(stack, TAG_SEALED), key);
+            CompoundTag fresh = new CompoundTag();
+            fresh.put(key, IotaType.serialize(datum));
+            NBTHelper.putCompound(stack, TAG_PAGES, fresh);
+        }
+
+        if (datum == null) {
+            // Seal state is keyed on page index; removing the iota also clears the seal flag
+            // for that page. Same copy-vs-mutate rule applies.
+            CompoundTag sealTags = NBTHelper.getCompound(stack, TAG_SEALED);
+            if (sealTags != null) {
+                sealTags.remove(key);
+                if (sealTags.isEmpty()) {
+                    NBTHelper.remove(stack, TAG_SEALED);
+                } else {
+                    NBTHelper.putCompound(stack, TAG_SEALED, sealTags);
+                }
+            }
         }
     }
 
