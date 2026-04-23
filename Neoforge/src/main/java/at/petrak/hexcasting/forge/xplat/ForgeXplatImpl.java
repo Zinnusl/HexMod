@@ -182,13 +182,21 @@ public class ForgeXplatImpl implements IXplatAbstractions {
     @Override public List<ResolvedPattern> getPatternsSavedInUi(ServerPlayer player) { return Collections.emptyList(); }
     @Override public void clearCastingData(ServerPlayer player) { }
 
-    // addl-data lookups — all null until caps are ported.
-    @Override public @Nullable ADMediaHolder findMediaHolder(ItemStack stack) { return null; }
+    // addl-data lookups — instance-dispatched via ADHolderAdapters.
+    @Override public @Nullable ADMediaHolder findMediaHolder(ItemStack stack) {
+        return at.petrak.hexcasting.forge.cap.adimpl.ADHolderAdapters.media(stack);
+    }
     @Override public @Nullable ADMediaHolder findMediaHolder(ServerPlayer player) { return null; }
-    @Override public @Nullable ADIotaHolder findDataHolder(ItemStack stack) { return null; }
+    @Override public @Nullable ADIotaHolder findDataHolder(ItemStack stack) {
+        return at.petrak.hexcasting.forge.cap.adimpl.ADHolderAdapters.iota(stack);
+    }
     @Override public @Nullable ADIotaHolder findDataHolder(Entity entity) { return null; }
-    @Override public @Nullable ADHexHolder findHexHolder(ItemStack stack) { return null; }
-    @Override public @Nullable ADVariantItem findVariantHolder(ItemStack stack) { return null; }
+    @Override public @Nullable ADHexHolder findHexHolder(ItemStack stack) {
+        return at.petrak.hexcasting.forge.cap.adimpl.ADHolderAdapters.hex(stack);
+    }
+    @Override public @Nullable ADVariantItem findVariantHolder(ItemStack stack) {
+        return at.petrak.hexcasting.forge.cap.adimpl.ADHolderAdapters.variant(stack);
+    }
 
     // Colours
     @Override public boolean isPigment(ItemStack stack) { return false; }
